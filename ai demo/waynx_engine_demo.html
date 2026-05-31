@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Waynx · Recommender Engine v2.0 — Technical Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:      #07080a;
+  --surface: #0d0f12;
+  --panel:   #111418;
+  --border:  rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.12);
+  --accent:  #f5d800;
+  --accent2: rgba(245,216,0,0.12);
+  --accent3: rgba(245,216,0,0.06);
+  --green:   #3dffa0;
+  --green2:  rgba(61,255,160,0.1);
+  --red:     #ff5757;
+  --blue:    #57c8ff;
+  --purple:  #c57bff;
+  --orange:  #ff9a3c;
+  --txt:     #e8eaed;
+  --muted:   #5a6070;
+  --muted2:  #8a93a0;
+  --mono:    'JetBrains Mono', monospace;
+  --sans:    'Syne', sans-serif;
+}
+
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+body {
+  background: var(--bg);
+  color: var(--txt);
+  font-family: var(--mono);
+  font-size: 13px;
+  min-height: 100vh;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* ── GRID NOISE BACKGROUND ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(245,216,0,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245,216,0,0.015) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.app { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; }
+
+/* ── HEADER ── */
+.header {
+  display: flex; align-items: center; gap: 16px;
+  border-bottom: 1px solid var(--border2);
+  padding-bottom: 20px; margin-bottom: 32px;
+}
+.logo {
+  font-family: var(--sans); font-size: 22px; font-weight: 800;
+  color: var(--accent); letter-spacing: .06em;
+  text-shadow: 0 0 32px rgba(245,216,0,0.35);
+}
+.header-title {
+  font-family: var(--sans); font-size: 13px; font-weight: 600;
+  color: var(--muted2); letter-spacing: .12em; text-transform: uppercase;
+}
+.header-badge {
+  margin-left: auto;
+  font-size: 10px; letter-spacing: .15em; text-transform: uppercase;
+  padding: 4px 12px; border: 1px solid rgba(61,255,160,0.3);
+  border-radius: 3px; color: var(--green);
+  background: rgba(61,255,160,0.04);
+}
+.version {
+  font-size: 10px; color: var(--muted); letter-spacing: .1em;
+  padding: 4px 10px; border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+/* ── LAYOUT ── */
+.layout { display: grid; grid-template-columns: 340px 1fr; gap: 20px; align-items: start; }
+
+/* ── PANELS ── */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.panel-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+}
+.panel-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+.panel-title { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
+.panel-meta { margin-left: auto; font-size: 10px; color: var(--muted); letter-spacing: .08em; }
+.panel-body { padding: 18px; }
+
+/* ── INPUTS ── */
+.field { margin-bottom: 16px; }
+.field-label {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 9px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--muted2); margin-bottom: 7px; font-weight: 500;
+}
+.field-label .dim-tag {
+  font-size: 8px; padding: 1px 6px; border-radius: 2px;
+  background: var(--accent2); color: var(--accent); border: 1px solid rgba(245,216,0,0.2);
+  letter-spacing: .08em;
+}
+.field-label .weight-tag {
+  margin-left: auto;
+  font-size: 8px; padding: 1px 6px; border-radius: 2px;
+  background: var(--green2); color: var(--green); border: 1px solid rgba(61,255,160,0.2);
+}
+
+select, input[type=number] {
+  width: 100%; background: var(--surface);
+  border: 1px solid var(--border2); border-radius: 4px;
+  color: var(--txt); font-family: var(--mono); font-size: 12px;
+  padding: 9px 12px; outline: none; transition: .15s;
+  -webkit-appearance: none; appearance: none;
+}
+select:focus, input[type=number]:focus { border-color: rgba(245,216,0,0.4); box-shadow: 0 0 0 2px rgba(245,216,0,0.08); }
+
+.multi-select { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.ms-opt {
+  padding: 7px 10px; border-radius: 3px;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  cursor: pointer; font-size: 11px; color: var(--muted2);
+  transition: .13s; text-align: center; user-select: none;
+  display: flex; align-items: center; gap: 5px;
+}
+.ms-opt:hover { border-color: rgba(245,216,0,0.3); color: var(--txt); }
+.ms-opt.active { border-color: var(--accent); color: var(--accent); background: var(--accent2); }
+.ms-opt .ms-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+input[type=range] {
+  -webkit-appearance: none; width: 100%; height: 2px;
+  background: linear-gradient(90deg, var(--accent) var(--p,50%), var(--border2) var(--p,50%));
+  border: none; padding: 0; border-radius: 0; outline: none; cursor: pointer;
+  margin: 6px 0 2px;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 10px rgba(245,216,0,0.5);
+}
+.range-labels { display: flex; justify-content: space-between; font-size: 9px; color: var(--muted); letter-spacing: .1em; }
+.range-val { font-size: 18px; font-weight: 700; color: var(--accent); font-family: var(--sans); letter-spacing: .02em; margin-bottom: 4px; }
+
+/* ── WEIGHTS MATRIX ── */
+.weights-grid { display: flex; flex-direction: column; gap: 5px; margin-top: 4px; }
+.w-row {
+  display: grid; grid-template-columns: 1fr 28px 80px;
+  gap: 8px; align-items: center;
+}
+.w-label { font-size: 9px; color: var(--muted2); letter-spacing: .08em; text-transform: uppercase; }
+.w-val { font-size: 10px; color: var(--accent); text-align: right; font-weight: 500; }
+.w-bar-wrap { height: 2px; background: var(--border2); border-radius: 1px; overflow: hidden; }
+.w-bar { height: 100%; background: var(--accent); border-radius: 1px; transition: .3s; }
+
+/* ── GENERATE BTN ── */
+.gen-btn {
+  width: 100%; padding: 14px;
+  background: var(--accent); border: none; border-radius: 4px;
+  color: var(--bg); font-family: var(--sans); font-size: 13px;
+  font-weight: 800; letter-spacing: .18em; text-transform: uppercase;
+  cursor: pointer; transition: .2s; margin-top: 6px;
+}
+.gen-btn:hover { box-shadow: 0 6px 32px rgba(245,216,0,0.35); transform: translateY(-1px); }
+.gen-btn:active { transform: none; }
+.gen-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+/* ── RIGHT PANEL TABS ── */
+.tabs {
+  display: flex; border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+}
+.tab {
+  font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+  padding: 11px 18px; cursor: pointer; color: var(--muted);
+  border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: .15s; font-weight: 500;
+}
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.tab-body { padding: 18px; display: none; }
+.tab-body.active { display: block; }
+
+/* ── SCORE BREAKDOWN ── */
+.score-breakdown {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 5px; padding: 14px 16px; margin-bottom: 16px;
+}
+.sb-title { font-family: var(--sans); font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted2); margin-bottom: 12px; }
+.sb-row { display: grid; grid-template-columns: 100px 1fr 44px; gap: 8px; align-items: center; margin-bottom: 7px; }
+.sb-row:last-child { margin-bottom: 0; }
+.sb-dim { font-size: 9px; color: var(--muted2); text-transform: uppercase; letter-spacing: .1em; }
+.sb-bar-wrap { height: 3px; background: var(--border2); border-radius: 2px; overflow: hidden; }
+.sb-bar { height: 100%; border-radius: 2px; transition: width .4s ease; }
+.sb-bar.d-cat    { background: var(--accent); }
+.sb-bar.d-budget { background: var(--green); }
+.sb-bar.d-season { background: var(--blue); }
+.sb-bar.d-crowd  { background: var(--purple); }
+.sb-bar.d-comp   { background: var(--orange); }
+.sb-bar.d-age    { background: var(--red); }
+.sb-bar.d-rating { background: var(--green); }
+.sb-score { font-size: 10px; color: var(--txt); text-align: right; font-weight: 500; }
+
+/* ── RECOMMENDATION CARDS ── */
+.rec-list { display: flex; flex-direction: column; gap: 9px; }
+.rec-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 5px; padding: 13px 15px;
+  display: grid; grid-template-columns: 36px 1fr auto;
+  gap: 12px; align-items: start;
+  transition: .15s; cursor: pointer;
+  opacity: 0; animation: fadeUp .3s ease forwards;
+}
+.rec-card:hover { border-color: rgba(245,216,0,0.25); }
+.rec-card.selected { border-color: var(--accent); background: var(--accent3); }
+@keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+.rec-rank {
+  font-family: var(--sans); font-size: 28px; font-weight: 800;
+  color: var(--border2); line-height: 1; text-align: center;
+  padding-top: 2px;
+}
+.rec-rank.top3 { color: var(--accent); }
+.rec-name { font-family: var(--sans); font-size: 13px; font-weight: 700; margin-bottom: 4px; color: var(--txt); }
+.rec-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 6px; }
+.tag {
+  font-size: 8px; padding: 2px 7px; border-radius: 2px;
+  letter-spacing: .1em; text-transform: uppercase; font-weight: 500;
+  border: 1px solid;
+}
+.tag-cat-history   { color:#ff9a6c; border-color:rgba(255,154,108,.3); background:rgba(255,154,108,.06); }
+.tag-cat-beach     { color:#57c8ff; border-color:rgba(87,200,255,.3); background:rgba(87,200,255,.06); }
+.tag-cat-food      { color:#ffb347; border-color:rgba(255,179,71,.3); background:rgba(255,179,71,.06); }
+.tag-cat-wellness  { color:#3dffa0; border-color:rgba(61,255,160,.3); background:rgba(61,255,160,.06); }
+.tag-cat-religious { color:#c57bff; border-color:rgba(197,123,255,.3); background:rgba(197,123,255,.06); }
+.tag-cat-nature    { color:#7fff7a; border-color:rgba(127,255,122,.3); background:rgba(127,255,122,.06); }
+.tag-cat-adventure { color:#ff9a3c; border-color:rgba(255,154,60,.3); background:rgba(255,154,60,.06); }
+.tag-city { color:var(--muted2); border-color:var(--border2); }
+.tag-budget-low    { color:var(--green); border-color:rgba(61,255,160,.25); }
+.tag-budget-medium { color:var(--accent); border-color:rgba(245,216,0,.25); }
+.tag-budget-high   { color:#ff9a3c; border-color:rgba(255,154,60,.25); }
+.rec-desc { font-size: 11px; color: var(--muted); line-height: 1.5; font-weight: 300; }
+
+.rec-scores { text-align: right; }
+.sim-score { font-family: var(--sans); font-size: 22px; font-weight: 800; color: var(--accent); line-height: 1; }
+.conf-score { font-size: 9px; color: var(--green); letter-spacing: .1em; margin-top: 3px; }
+.rating-row { font-size: 10px; color: var(--muted2); margin-top: 5px; }
+.cf-score { font-size: 9px; color: var(--blue); letter-spacing: .08em; margin-top: 2px; }
+
+/* ── MINI BARS ── */
+.sim-bar-wrap { width: 100%; height: 2px; background: var(--border2); border-radius: 1px; margin-top: 6px; overflow: hidden; }
+.sim-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--green)); border-radius: 1px; transition: width .5s ease; }
+
+/* ── ITINERARY ── */
+.itin-summary {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 18px;
+}
+.is-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 12px 14px; }
+.is-num { font-family: var(--sans); font-size: 22px; font-weight: 800; color: var(--accent); line-height: 1; }
+.is-lbl { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-top: 3px; }
+
+.dest-block { margin-bottom: 14px; }
+.dest-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 14px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 4px 4px 0 0;
+  border-bottom-color: transparent;
+}
+.dest-city { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--accent); }
+.dest-dist { font-size: 9px; color: var(--muted); }
+.dest-days-badge {
+  margin-left: auto; font-size: 9px; letter-spacing: .1em;
+  padding: 2px 9px; border-radius: 20px;
+  background: var(--accent2); color: var(--accent);
+  border: 1px solid rgba(245,216,0,0.25);
+}
+.dest-cluster-score { font-size: 9px; color: var(--green); padding: 2px 7px; border: 1px solid rgba(61,255,160,0.2); border-radius: 3px; }
+
+.day-block {
+  border: 1px solid var(--border); border-top: none;
+  display: grid; grid-template-columns: 56px 1fr;
+}
+.day-block:last-child { border-radius: 0 0 4px 4px; overflow: hidden; }
+.day-col {
+  padding: 10px 12px; border-right: 1px solid var(--border);
+  background: rgba(255,255,255,0.01);
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+}
+.day-n { font-family: var(--sans); font-size: 18px; font-weight: 800; color: rgba(255,255,255,0.1); line-height: 1; }
+.day-h { font-size: 8px; letter-spacing: .1em; color: var(--muted); }
+.acts-col { padding: 8px 12px; display: flex; flex-direction: column; gap: 5px; }
+.act-item {
+  display: grid; grid-template-columns: 28px 1fr 50px 55px;
+  gap: 8px; align-items: center;
+  padding: 6px 8px; border-radius: 3px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border); transition: .12s;
+}
+.act-item:hover { border-color: var(--border2); }
+.act-dur { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--accent); text-align: center; }
+.act-name-col { }
+.act-n { font-size: 11px; font-weight: 500; color: var(--txt); margin-bottom: 1px; }
+.act-c { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+.act-score { font-size: 9px; color: var(--accent); text-align: right; }
+.act-rating { font-size: 9px; color: var(--muted2); text-align: right; }
+.free-slot { padding: 8px 12px; font-size: 11px; color: var(--muted); font-style: italic; }
+
+/* ── DEBUG / EVAL ── */
+.eval-section { margin-bottom: 18px; }
+.eval-title { font-family: var(--sans); font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--muted2); margin-bottom: 10px; padding-bottom: 7px; border-bottom: 1px solid var(--border); }
+.eval-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.eval-metric { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; padding: 11px 13px; }
+.em-val { font-family: var(--sans); font-size: 20px; font-weight: 800; line-height: 1; margin-bottom: 3px; }
+.em-lbl { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.em-sub { font-size: 9px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+.em-green { color: var(--green); }
+.em-accent { color: var(--accent); }
+.em-blue { color: var(--blue); }
+.em-purple { color: var(--purple); }
+
+.dim-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+.dim-table th { text-align: left; font-size: 8px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 6px 8px; border-bottom: 1px solid var(--border); font-weight: 500; }
+.dim-table td { padding: 7px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.dim-table tr:last-child td { border-bottom: none; }
+.dim-table tr:hover td { background: rgba(255,255,255,0.01); }
+.td-name { color: var(--txt); font-weight: 500; }
+.td-mono { font-family: var(--mono); color: var(--muted2); font-size: 9px; }
+.td-weight { color: var(--accent); font-weight: 700; font-family: var(--sans); }
+.td-impact { color: var(--green); font-family: var(--sans); font-weight: 700; }
+.bar-cell { }
+.inline-bar { height: 3px; border-radius: 2px; background: var(--accent); display: inline-block; }
+
+/* ── VECTOR DISPLAY ── */
+.vector-display {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 4px; padding: 12px 14px; font-family: var(--mono);
+  font-size: 10px; color: var(--muted2); word-break: break-all;
+  margin-bottom: 12px; line-height: 1.8;
+}
+.vd-label { font-size: 8px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.vd-dim { display: inline-block; margin: 1px 2px; }
+.vd-dim.hit { color: var(--accent); font-weight: 700; }
+.vd-dim.near { color: var(--blue); }
+.vd-dim.miss { color: var(--muted); opacity: .5; }
+
+/* ── EMPTY STATE ── */
+.empty-state { padding: 60px 20px; text-align: center; }
+.es-icon { font-size: 36px; margin-bottom: 16px; opacity: .3; }
+.es-title { font-family: var(--sans); font-size: 14px; font-weight: 700; color: var(--muted2); margin-bottom: 6px; letter-spacing: .05em; }
+.es-sub { font-size: 11px; color: var(--muted); font-weight: 300; }
+
+/* ── PENALTIES ── */
+.penalty-badge { display: inline-block; font-size: 8px; padding: 1px 5px; border-radius: 2px; margin-left: 4px; }
+.penalty-hard { background: rgba(255,87,87,0.12); color: var(--red); border: 1px solid rgba(255,87,87,0.2); }
+.penalty-soft { background: rgba(255,154,60,0.1); color: var(--orange); border: 1px solid rgba(255,154,60,0.2); }
+.penalty-none { background: rgba(61,255,160,0.08); color: var(--green); border: 1px solid rgba(61,255,160,0.2); }
+
+.sep { height: 1px; background: var(--border); margin: 16px 0; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.14); }
+
+@media(max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  .itin-summary { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">WAYNX</div>
+    <div class="header-title">Recommender Engine · Technical Demo</div>
+    <div class="version">v2.0</div>
+    <div class="header-badge">● ENGINE ACTIVE</div>
+  </div>
+
+  <div class="layout">
+
+    <!-- LEFT: INPUTS -->
+    <div>
+      <div class="panel" style="margin-bottom:14px">
+        <div class="panel-head">
+          <div class="panel-dot"></div>
+          <div class="panel-title">User Profile Input</div>
+          <div class="panel-meta">7 DIMENSIONS</div>
+        </div>
+        <div class="panel-body">
+
+          <!-- D1: Interests -->
+          <div class="field">
+            <div class="field-label">
+              <span>D1 · Interests</span>
+              <span class="dim-tag">MULTI</span>
+              <span class="weight-tag">w = 0.30</span>
+            </div>
+            <div class="multi-select" id="interests-sel">
+              <div class="ms-opt active" data-val="history" onclick="toggleInterest(this)"><div class="ms-dot"></div>History</div>
+              <div class="ms-opt" data-val="beach" onclick="toggleInterest(this)"><div class="ms-dot"></div>Beach</div>
+              <div class="ms-opt" data-val="food" onclick="toggleInterest(this)"><div class="ms-dot"></div>Food</div>
+              <div class="ms-opt" data-val="wellness" onclick="toggleInterest(this)"><div class="ms-dot"></div>Wellness</div>
+              <div class="ms-opt" data-val="religious" onclick="toggleInterest(this)"><div class="ms-dot"></div>Religious</div>
+              <div class="ms-opt" data-val="nature" onclick="toggleInterest(this)"><div class="ms-dot"></div>Nature</div>
+              <div class="ms-opt active" data-val="adventure" onclick="toggleInterest(this)"><div class="ms-dot"></div>Adventure</div>
+            </div>
+          </div>
+
+          <!-- D2: Companion -->
+          <div class="field">
+            <div class="field-label">
+              <span>D2 · Travel Companion</span>
+              <span class="dim-tag">SINGLE</span>
+              <span class="weight-tag">w = 0.15</span>
+            </div>
+            <select id="companion">
+              <option value="solo">Solo</option>
+              <option value="couple" selected>Couple</option>
+              <option value="family">Family</option>
+              <option value="friends">Friends</option>
+            </select>
+          </div>
+
+          <!-- D3: Budget -->
+          <div class="field">
+            <div class="field-label">
+              <span>D3 · Budget Tier</span>
+              <span class="dim-tag">ORDINAL</span>
+              <span class="weight-tag">w = 0.20</span>
+            </div>
+            <select id="budget">
+              <option value="low">Low — Budget</option>
+              <option value="medium" selected>Medium — Mid-Range</option>
+              <option value="high">High — Luxury</option>
+            </select>
+          </div>
+
+          <!-- D4: Age Group -->
+          <div class="field">
+            <div class="field-label">
+              <span>D4 · Age Group</span>
+              <span class="dim-tag">SINGLE</span>
+              <span class="weight-tag">w = 0.08</span>
+            </div>
+            <select id="age_group">
+              <option value="teen">Teen (&lt;20)</option>
+              <option value="adult" selected>Adult (20–60)</option>
+              <option value="senior">Senior (60+)</option>
+            </select>
+          </div>
+
+          <!-- D5: Crowd -->
+          <div class="field">
+            <div class="field-label">
+              <span>D5 · Crowd Sensitivity</span>
+              <span class="dim-tag">ORDINAL</span>
+              <span class="weight-tag">w = 0.10</span>
+            </div>
+            <select id="crowd">
+              <option value="quiet" selected>Quiet — Hidden Gems</option>
+              <option value="no_preference">No Preference</option>
+              <option value="crowded">Crowded — Vibrant</option>
+            </select>
+          </div>
+
+          <!-- D6: Season -->
+          <div class="field">
+            <div class="field-label">
+              <span>D6 · Travel Season</span>
+              <span class="dim-tag">CIRCULAR</span>
+              <span class="weight-tag">w = 0.10</span>
+            </div>
+            <select id="season">
+              <option value="winter" selected>Winter (Dec–Feb)</option>
+              <option value="spring">Spring (Mar–May)</option>
+              <option value="summer">Summer (Jun–Aug)</option>
+              <option value="autumn">Autumn (Sep–Nov)</option>
+            </select>
+          </div>
+
+          <!-- D7: Duration -->
+          <div class="field">
+            <div class="field-label">
+              <span>D7 · Trip Duration</span>
+              <span class="dim-tag">CONTINUOUS</span>
+              <span class="weight-tag">w = 0.07</span>
+            </div>
+            <div class="range-val"><span id="dur-display">7</span> <span style="font-size:13px;color:var(--muted);font-family:var(--mono)">days</span></div>
+            <input type="range" id="duration" min="2" max="14" value="7" style="--p:45.5%" oninput="onDurSlide(this)"/>
+            <div class="range-labels"><span>2</span><span>14</span></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- WEIGHT MATRIX -->
+      <div class="panel" style="margin-bottom:14px">
+        <div class="panel-head">
+          <div class="panel-dot" style="background:var(--green);box-shadow:0 0 8px var(--green)"></div>
+          <div class="panel-title" style="color:var(--green)">Weight Matrix</div>
+          <div class="panel-meta">17-DIM VECTOR</div>
+        </div>
+        <div class="panel-body">
+          <div class="weights-grid">
+            <div class="w-row"><div class="w-label">Category Match</div><div class="w-val">0.30</div><div class="w-bar-wrap"><div class="w-bar" style="width:100%"></div></div></div>
+            <div class="w-row"><div class="w-label">Budget Compat.</div><div class="w-val">0.20</div><div class="w-bar-wrap"><div class="w-bar" style="width:67%"></div></div></div>
+            <div class="w-row"><div class="w-label">Companion Fit</div><div class="w-val">0.15</div><div class="w-bar-wrap"><div class="w-bar" style="width:50%"></div></div></div>
+            <div class="w-row"><div class="w-label">Crowd Sensitivity</div><div class="w-val">0.10</div><div class="w-bar-wrap"><div class="w-bar" style="width:33%"></div></div></div>
+            <div class="w-row"><div class="w-label">Season Adjacency</div><div class="w-val">0.10</div><div class="w-bar-wrap"><div class="w-bar" style="width:33%"></div></div></div>
+            <div class="w-row"><div class="w-label">Age Suitability</div><div class="w-val">0.08</div><div class="w-bar-wrap"><div class="w-bar" style="width:27%"></div></div></div>
+            <div class="w-row"><div class="w-label">CF + Rating Blend</div><div class="w-val">0.07</div><div class="w-bar-wrap"><div class="w-bar" style="width:23%"></div></div></div>
+          </div>
+          <div class="sep"></div>
+          <div style="font-size:9px;color:var(--muted);line-height:1.7">
+            Penalties: hard mismatch budget −0.20 · crowd strict −0.15 · CF interaction data from 10,000 records
+          </div>
+        </div>
+      </div>
+
+      <button class="gen-btn" onclick="generate()">▶ &nbsp; RUN ENGINE</button>
+    </div>
+
+    <!-- RIGHT: OUTPUTS -->
+    <div class="panel">
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('recs',this)">Recommendations</div>
+        <div class="tab" onclick="switchTab('plan',this)">Itinerary</div>
+        <div class="tab" onclick="switchTab('eval',this)">Eval Metrics</div>
+        <div class="tab" onclick="switchTab('debug',this)">Vector Debug</div>
+      </div>
+
+      <div id="tab-recs" class="tab-body active">
+        <div class="empty-state" id="recs-empty">
+          <div class="es-icon">⬡</div>
+          <div class="es-title">Engine Idle</div>
+          <div class="es-sub">Set user profile and click RUN ENGINE to generate recommendations</div>
+        </div>
+        <div id="recs-content" style="display:none"></div>
+      </div>
+
+      <div id="tab-plan" class="tab-body">
+        <div class="empty-state" id="plan-empty">
+          <div class="es-icon">⬡</div>
+          <div class="es-title">No Itinerary</div>
+          <div class="es-sub">Run the engine first to generate an optimised trip plan</div>
+        </div>
+        <div id="plan-content" style="display:none"></div>
+      </div>
+
+      <div id="tab-eval" class="tab-body">
+        <div class="empty-state" id="eval-empty">
+          <div class="es-icon">⬡</div>
+          <div class="es-title">No Metrics</div>
+          <div class="es-sub">Run the engine to compute evaluation metrics</div>
+        </div>
+        <div id="eval-content" style="display:none"></div>
+      </div>
+
+      <div id="tab-debug" class="tab-body">
+        <div class="empty-state" id="debug-empty">
+          <div class="es-icon">⬡</div>
+          <div class="es-title">No Vector Data</div>
+          <div class="es-sub">Run the engine to inspect the 17-dimensional feature vectors</div>
+        </div>
+        <div id="debug-content" style="display:none"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const PLACES = [
+{id:1,name:"Pyramids of Giza",city:"Cairo",cat:"history",budget:"medium",season:"winter",crowd:"crowded",for:["family", "couple", "solo", "friends"],age:["teen", "adult", "senior"],dur:4,rating:4.9,cf:0.79483,desc:"The last surviving wonder of the ancient world on the Giza plateau."},
+{id:2,name:"Egyptian Museum",city:"Cairo",cat:"history",budget:"low",season:"any",crowd:"crowded",for:["family", "couple", "solo", "friends"],age:["teen", "adult", "senior"],dur:3,rating:4.7,cf:0.76041,desc:"World's largest collection of ancient Egyptian artifacts."},
+{id:3,name:"Karnak Temple",city:"Luxor",cat:"history",budget:"medium",season:"winter",crowd:"crowded",for:["family", "couple", "solo", "friends"],age:["teen", "adult", "senior"],dur:3,rating:4.8,cf:0.74655,desc:"The largest ancient religious site in the world."},
+{id:4,name:"Valley of the Kings",city:"Luxor",cat:"history",budget:"medium",season:"winter",crowd:"moderate",for:["couple", "solo", "friends"],age:["teen", "adult"],dur:4,rating:4.8,cf:0.68553,desc:"Royal burial ground of pharaohs including Tutankhamun."},
+{id:5,name:"Abu Simbel Temples",city:"Aswan",cat:"history",budget:"high",season:"winter",crowd:"moderate",for:["family", "couple", "solo", "friends"],age:["teen", "adult", "senior"],dur:5,rating:4.9,cf:0.72603,desc:"Two massive rock-cut temples built by Ramesses II."},
+{id:6,name:"Luxor Temple",city:"Luxor",cat:"history",budget:"low",season:"winter",crowd:"crowded",for:["family", "couple", "solo", "friends"],age:["teen", "adult", "senior"],dur:2,rating:4.7,cf:0.77195,desc:"Ancient Egyptian temple complex on the east bank of the Nile."},
+{id:7,name:"Saqqara Step Pyramid",city:"Cairo",cat:"history",budget:"medium",season:"winter",crowd:"quiet",for:["couple", "solo", "friends"],age:["adult"],dur:3,rating:4.5,cf:0.71655,desc:"The oldest complete stone building complex in history."},
+{id:8,name:"Philae Temple",city:"Aswan",cat:"history",budget:"medium",season:"winter",crowd:"moderate",for:["family", "couple", "solo"],age:["teen", "adult", "senior"],dur:2,rating:4.6,cf:0.81563,desc:"Island temple dedicated to goddess Isis, accessible by boat."},
+{id:9,name:"Colossi of Memnon",city:"Luxor",cat:"history",budget:"low",season:"any",crowd:"moderate",for:["family", "couple", "solo", "friends"],age:["teen", "adult", "senior"],dur:1,rating:4.3,cf:0.82406,desc:"Two massive stone statues of Pharaoh Amenhotep III."},
+{id:10,name:"Bibliotheca Alexandrina",city:"Alexandria",cat:"history",budget:"low",season:"any",crowd:"moderate",for:["family", "couple", "solo", "friends"],age:["teen", "adult", "senior"],dur:3,rating:4.6,cf:0.76143,desc:"Modern revival of the ancient Library of Alexandria."},
+{id:11,name:"Medinet Habu Temple",city:"Luxor",cat:"history",budget:"low",season:"winter",crowd:"quiet",for:["couple", "solo", "friends"],age:["adult"],dur:2,rating:4.5,cf:0.72525,desc:"Mortuary temple of Ramesses III with well-preserved painted reliefs."},
+{id:12,name:"Deir el-Bahari (Hatshepsut)",city:"Luxor",cat:"history",budget:"medium",season:"winter",crowd:"moderate",for:["couple", "solo", "friends"],age:["teen", "adult"],dur:2,rating:4.6,cf:0.66577,desc:"Mortuary temple of Queen Hatshepsut carved into the cliffs of Deir el-Bahari."},
+{id:13,name:"Dendera Temple Complex",city:"Qena",cat:"history",budget:"medium",season:"winter",crowd:"quiet",for:["couple", "solo", "friends"],age:["adult"],dur:3,rating:4.5,cf:0.7278,desc:"Temple of Hathor with remarkably preserved zodiac ceilings."},
+{id:14,name:"Abydos Temple",city:"Sohag",cat:"history",budget:"medium",season:"winter",crowd:"quiet",for:["solo", "couple"],age:["adult"],dur:2,rating:4.4,cf:0.72131,desc:"One of Egypt's oldest cities containing the Temple of Seti I."},
+{id:15,name:"Edfu Temple",city:"Edfu",cat:"history",budget:"medium",season:"winter",crowd:"moderate",for:["family", "couple", "solo", "friends"],age:["teen", "adult", "senior"],dur:2,rating:4.5,cf:0.82431,desc:"Best-preserved ancient Egyptian temple, dedicated to Horus."},
+{id:16,name:"Kom Ombo Temple",city:"Kom Ombo",cat:"history",budget:"low",season:"winter",crowd:"moderate",for:["family", "couple", "solo", "friends"],age:["teen", "adult", "senior"],dur:1,rating:4.4,cf:0.78897,desc:"Unique double temple dedicated to both Sobek and Horus on the Nile bank."},
+{id:17,name:"Alexandria Catacombs",city:"Alexandria",cat:"history",budget:"low",season:"any",crowd:"moderate",for:["solo", "couple", "friends"],age:["adult"],dur:2,rating:4.4,cf:0.77764,desc:"Ancient Roman-Egyptian burial site with underground chambers."},
+{id:18,name:"Pompey's Pillar",city:"Alexandria",cat:"history",budget:"low",season:"any",crowd:"quiet",for:["solo", "couple", "friends"],age:["teen", "adult", "senior"],dur:1,rating:4.1,cf:0.80158,desc:"Towering Roman triumphal column in the heart of Alexandria."},
+{id:19,name:"Qaitbay Citadel",city:"Alexandria",cat:"history",budget:"low",season:"any",crowd:"moderate",for:["family", "couple", "solo", "friends"],age:["teen", "adult", "senior"],dur:2,rating:4.4,cf:0.8145,desc:"15th-century fortress built on the site of the ancient Lighthouse of Alexandria."},
+{id:20,name:"Nubian Museum",city:"Aswan",cat:"history",budget:"low",season:"any",crowd:"quiet",for:["solo", "couple", "friends"],age:["adult", "senior"],dur:2,rating:4.5,cf:0.78479,desc:"Museum celebrating the rich history and culture of the Nubian people."},
+{id:21,name:"Grand Egyptian Museum",city:"Cairo",cat:"history",budget:"high",season:"any",crowd:"crowded",for:["family", "couple", "solo", "friends"],age:["teen", "adult", "senior"],dur:5,rating:4.8,cf:0.74933,desc:"The world's largest archaeological museum, home to over 100,000 artifacts."},
+{id:22,name:"Coptic Museum Cairo",city:"Cairo",cat:"history",budget:"low",season:"any",crowd:"quiet",for:["solo", "couple", "friends"],age:["adult", "senior"],dur:2,rating:4.3,cf:0.771,desc:"World's largest collection of Coptic Christian art and artifacts."},
+{id:23,name:"Ramesseum",city:"Luxor",cat:"history",budget:"low",season:"winter",crowd:"quiet",for:["solo", "couple", "friends"],age:["adult"],dur:2,rating:4.3,cf:0.72713,desc:"Mortuary temple of Ramesses II with the famous fallen Ozymandias colossus."},
+{id:24,name:"Valley of the Queens",city:"Luxor",cat:"history",budget:"medium",season:"winter",crowd:"quiet",for:["couple", "solo", "friends"],age:["adult"],dur:2,rating:4.4,cf:0.77594,desc:"Burial site of queens and royal children with exquisite painted tombs."},
+{id:25,name:"Aswan High Dam",city:"Aswan",cat:"history",budget:"low",season:"any",crowd:"moderate",for:["family", "solo", "friends"],age:["teen", "adult", "senior"],dur:1,rating:4.0,cf:0.78296,desc:"One of the world's largest embankment dams, reshaping modern Egypt."},
+{id:26,name:"Kharga Oasis Temples",city:"Kharga",cat:"history",budget:"medium",season:"winter",crowd:"quiet",for:["solo", "couple"],age:["adult"],dur:3,rating:4.2,cf:0.6655,desc:"Remote oasis with ancient temples and early Christian monuments."},
+{id:27,name:"Tell El-Amarna",city:"Minya",cat:"history",budget:"medium",season:"winter",crowd:"quiet",for:["solo", "couple"],age:["adult"],dur:3,rating:4.2,cf:0.724,desc:"Ruins of Akhenaten's short-lived capital city, the most important Amarna period site."},
+{id:28,name:"Beni Hasan Tombs",city:"Minya",cat:"history",budget:"low",season:"winter",crowd:"quiet",for:["solo", "couple"],age:["adult"],dur:2,rating:4.1,cf:0.77521,desc:"Middle Kingdom rock-cut tombs with vivid paintings of daily ancient Egyptian life."},
+{id:29,name:"Esna Temple",city:"Esna",cat:"history",budget:"low",season:"winter",crowd:"quiet",for:["solo", "couple", "friends"],age:["adult", "senior"],dur:1,rating:4.2,cf:0.77484,desc:"Roman-era temple to Khnum half-buried below the modern town level."},
+{id:30,name:"Abusir Pyramids",city:"Cairo",cat:"history",budget:"low",season:"winter",crowd:"quiet",for:["solo", "couple"],age:["adult"],dur:2,rating:4.1,cf:0.6997,desc:"Fifth Dynasty pyramid complex, quieter and less touristy than Giza."},
+{id:31,name:"Dahshur Pyramids",city:"Cairo",cat:"history",budget:"low",season:"winter",crowd:"quiet",for:["couple", "solo", "friends"],age:["teen", "adult"],dur:2,rating:4.3,cf:0.71759,desc:"Bent Pyramid and Red Pyramid — Egypt's first true pyramids with interior access."},
+{id:32,name:"Serapeum of Saqqara",city:"Cairo",cat:"history",budget:"medium",season:"winter",crowd:"quiet",for:["solo", "couple"],age:["adult"],dur:2,rating:4.4,cf:0.7514,desc:"Underground burial vaults of the sacred Apis bulls carved deep into the rock."},
+{id:33,name:"Elephantine Island Ruins",city:"Aswan",cat:"history",budget:"low",season:"winter",crowd:"quiet",for:["solo", "couple", "friends"],age:["adult"],dur:2,rating:4.2,cf:0.76818,desc:"Ancient island settlement at the first Nile cataract with a Nilometer."},
+{id:34,name:"Wadi Natrun Monasteries",city:"Wadi Natrun",cat:"history",budget:"low",season:"winter",crowd:"quiet",for:["solo", "couple"],age:["adult", "senior"],dur:3,rating:4.3,cf:0.76946,desc:"Group of ancient Coptic monasteries continuously inhabited since the 4th century."},
+{id:35,name:"Tanis Archaeological Site",city:"Sharqia",cat:"history",budget:"low",season:"winter",crowd:"quiet",for:["solo", "couple"],age:["adult"],dur:2,rating:4.0,cf:0.69561,desc:"Delta city containing royal tombs that rivaled those in the Valley of the Kings."},
+{id:36,name:"Sharm El-Sheikh Beach",city:"Sharm El-Sheikh",cat:"beach",budget:"high",season:"any",crowd:"crowded",for:["family", "couple", "friends"],age:["teen", "adult"],dur:8,rating:4.7,cf:0.7751,desc:"World-class diving and snorkeling in crystal Red Sea waters."},
+{id:37,name:"Hurghada Beach",city:"Hurghada",cat:"beach",budget:"medium",season:"any",crowd:"crowded",for:["family", "couple", "friends"],age:["teen", "adult", "senior"],dur:8,rating:4.5,cf:0.77117,desc:"Popular Red Sea resort with beautiful beaches and water sports."},
+{id:38,name:"Marsa Alam Beach",city:"Marsa Alam",cat:"beach",budget:"medium",season:"any",crowd:"quiet",for:["couple", "solo", "friends"],age:["adult"],dur:8,rating:4.6,cf:0.76497,desc:"Pristine coral reefs and secluded beaches for diving enthusiasts."},
+{id:39,name:"Dahab Beach",city:"Dahab",cat:"beach",budget:"low",season:"any",crowd:"quiet",for:["solo", "friends", "couple"],age:["teen", "adult"],dur:8,rating:4.5,cf:0.77112,desc:"Bohemian Red Sea town with a famous laid-back atmosphere and the Blue Hole."},
+{id:40,name:"Marsa Matrouh Beach",city:"Marsa Matrouh",cat:"beach",budget:"low",season:"summer",crowd:"moderate",for:["family", "friends"],age:["teen", "adult", "senior"],dur:8,rating:4.4,cf:0.69071,desc:"Mediterranean beach with impossibly turquoise water."},
+{id:41,name:"Ain Sokhna Beach",city:"Ain Sokhna",cat:"beach",budget:"medium",season:"summer",crowd:"crowded",for:["family", "couple"],age:["teen", "adult", "senior"],dur:8,rating:4.0,cf:0.72041,desc:"Convenient Red Sea resort 120 km from Cairo, popular for weekends."},
+{id:42,name:"Nuweiba Beach",city:"Nuweiba",cat:"beach",budget:"low",season:"any",crowd:"quiet",for:["solo", "couple", "friends"],age:["teen", "adult"],dur:8,rating:4.3,cf:0.81681,desc:"Tranquil Sinai beach with views of Saudi Arabia and Jordan across the Gulf."},
+{id:43,name:"Taba Beach",city:"Taba",cat:"beach",budget:"medium",season:"any",crowd:"quiet",for:["couple", "friends"],age:["adult"],dur:8,rating:4.2,cf:0.74951,desc:"Remote northern Sinai beach where Egypt, Israel, Jordan, and Saudi Arabia meet."},
+{id:44,name:"El-Gouna Lagoon Beach",city:"Hurghada",cat:"beach",budget:"high",season:"any",crowd:"moderate",for:["couple", "friends", "family"],age:["adult", "senior"],dur:8,rating:4.6,cf:0.78211,desc:"Upscale resort town on a lagoon system with beautiful private beaches."},
+{id:45,name:"Soma Bay Beach",city:"Hurghada",cat:"beach",budget:"high",season:"any",crowd:"quiet",for:["couple", "friends"],age:["adult"],dur:8,rating:4.5,cf:0.71632,desc:"Exclusive peninsula resort with world-class kite surfing and golf."},
+{id:46,name:"Sahl Hasheesh Beach",city:"Hurghada",cat:"beach",budget:"high",season:"any",crowd:"moderate",for:["couple", "friends", "family"],age:["adult", "senior"],dur:8,rating:4.4,cf:0.71671,desc:"Upmarket planned resort town with pristine beaches south of Hurghada."},
+{id:47,name:"Agiba Beach",city:"Marsa Matrouh",cat:"beach",budget:"low",season:"summer",crowd:"quiet",for:["solo", "couple"],age:["adult"],dur:6,rating:4.5,cf:0.74436,desc:"Hidden cove with electric-blue water, only accessible by boat or a rocky path."},
+{id:48,name:"Cleopatra Beach",city:"Marsa Matrouh",cat:"beach",budget:"low",season:"summer",crowd:"moderate",for:["family", "couple", "friends"],age:["teen", "adult", "senior"],dur:6,rating:4.3,cf:0.82964,desc:"Famous crescent-shaped beach named after Cleopatra's legendary bathing spot."},
+{id:49,name:"Ras Sidr Beach",city:"Ras Sidr",cat:"beach",budget:"low",season:"any",crowd:"moderate",for:["family", "friends"],age:["teen", "adult"],dur:8,rating:4.0,cf:0.722,desc:"Popular Sinai beach famous for kitesurfing with steady winds year-round."},
+{id:50,name:"Port Ghalib Beach",city:"Marsa Alam",cat:"beach",budget:"high",season:"any",crowd:"quiet",for:["couple", "friends"],age:["adult"],dur:8,rating:4.4,cf:0.68707,desc:"Modern marina resort with direct access to pristine offshore reefs."},
+{id:51,name:"Hamata Islands",city:"Marsa Alam",cat:"beach",budget:"medium",season:"any",crowd:"quiet",for:["solo", "couple", "friends"],age:["adult"],dur:8,rating:4.7,cf:0.77648,desc:"Remote mangrove-fringed islands with untouched reefs and dugong sightings."},
+{id:52,name:"Ras Abu Galom",city:"Dahab",cat:"beach",budget:"low",season:"any",crowd:"quiet",for:["solo", "friends", "couple"],age:["teen", "adult"],dur:6,rating:4.6,cf:0.82953,desc:"Protected lagoon accessible only by camel or boat with stunning coral gardens."},
+{id:53,name:"Sharm Old Market Beach",city:"Sharm El-Sheikh",cat:"beach",budget:"medium",season:"any",crowd:"crowded",for:["family", "couple", "friends"],age:["teen", "adult", "senior"],dur:6,rating:4.2,cf:0.77886,desc:"Lively beach strip near the old market with beach clubs and watersports."},
+{id:54,name:"Paradise Beach Hurghada",city:"Hurghada",cat:"beach",budget:"medium",season:"any",crowd:"moderate",for:["family", "couple", "friends"],age:["teen", "adult", "senior"],dur:6,rating:4.1,cf:0.74936,desc:"Glass-bottom boat trips and beach club on a coral island near Hurghada."},
+{id:55,name:"Na'ama Bay Beach",city:"Sharm El-Sheikh",cat:"beach",budget:"high",season:"any",crowd:"crowded",for:["couple", "friends", "family"],age:["teen", "adult", "senior"],dur:8,rating:4.5,cf:0.66275,desc:"Sharm's main beach hub with luxury hotels, restaurants, and dive centers."},
+{id:56,name:"Khan El-Khalili Bazaar",city:"Cairo",cat:"food",budget:"low",season:"any",crowd:"crowded",for:["family", "couple", "solo", "friends"],age:["teen", "adult", "senior"],dur:3,rating:4.5,cf:0.78938,desc:"Historic bazaar with street food and authentic Egyptian cuisine since 1382."},
+{id:57,name:"Alexandria Seafood District",city:"Alexandria",cat:"food",budget:"medium",season:"any",crowd:"moderate",for:["family", "couple", "friends"],age:["adult", "senior"],dur:2,rating:4.6,cf:0.79704,desc:"Fresh Mediterranean seafood restaurants along the Corniche."},
+{id:58,name:"Nubian Village Food Tour",city:"Aswan",cat:"food",budget:"low",season:"winter",crowd:"quiet",for:["couple", "solo", "friends"],age:["adult"],dur:3,rating:4.4,cf:0.76654,desc:"Traditional Nubian cuisine in a colorful Nile village."},
+{id:59,name:"Luxor Local Food Market",city:"Luxor",cat:"food",budget:"low",season:"any",crowd:"moderate",for:["solo", "couple", "friends"],age:["teen", "adult"],dur:2,rating:4.2,cf:0.75333,desc:"Vibrant local market with authentic Upper Egyptian street food."},
+{id:60,name:"Zamalek Restaurant Mile",city:"Cairo",cat:"food",budget:"medium",season:"any",crowd:"moderate",for:["couple", "friends", "solo"],age:["adult"],dur:2,rating:4.5,cf:0.77346,desc:"Cairo's trendiest dining strip on Gezira Island with rooftop Nile views."},
+{id:61,name:"Aswan Spice Market",city:"Aswan",cat:"food",budget:"low",season:"any",crowd:"moderate",for:["solo", "couple", "friends"],age:["teen", "adult", "senior"],dur:1,rating:4.1,cf:0.7674,desc:"Colorful market filled with Nubian spices, hibiscus tea, and dried fruits."},
+{id:62,name:"Port Said Seafood Walk",city:"Port Said",cat:"food",budget:"low",season:"any",crowd:"moderate",for:["family", "friends", "couple"],age:["adult", "senior"],dur:2,rating:4.2,cf:0.79384,desc:"Famous waterfront for fresh Suez Canal fish and Mediterranean seafood."},
+{id:63,name:"Siwa Oasis Organic Farm",city:"Siwa",cat:"food",budget:"medium",season:"spring",crowd:"quiet",for:["couple", "solo"],age:["adult"],dur:2,rating:4.4,cf:0.67184,desc:"Organic date and olive farm with traditional Siwan cooking classes."},
+{id:64,name:"Mansoura Kunafa Trail",city:"Mansoura",cat:"food",budget:"low",season:"any",crowd:"moderate",for:["family", "friends", "couple"],age:["teen", "adult", "senior"],dur:2,rating:4.3,cf:0.78697,desc:"Delta city famous for the best kunafa in Egypt, baked fresh in street ovens."},
+{id:65,name:"Abou Tarek Koshary Cairo",city:"Cairo",cat:"food",budget:"low",season:"any",crowd:"crowded",for:["solo", "friends", "couple"],age:["teen", "adult", "senior"],dur:1,rating:4.6,cf:0.79509,desc:"The legendary koshary restaurant in downtown Cairo, a Cairo institution since 1950."},
+{id:66,name:"Borg El-Arab Food Festival",city:"Alexandria",cat:"food",budget:"medium",season:"summer",crowd:"crowded",for:["family", "friends"],age:["teen", "adult", "senior"],dur:3,rating:4.1,cf:0.74444,desc:"Seasonal festival showcasing the best of Alexandria's diverse food culture."},
+{id:67,name:"Nile Felucca Dinner Cruise",city:"Cairo",cat:"food",budget:"medium",season:"any",crowd:"moderate",for:["couple", "friends"],age:["adult"],dur:3,rating:4.4,cf:0.79397,desc:"Traditional sailing boat dinner on the Nile at sunset through central Cairo."},
+{id:68,name:"Dokki Fish Market Cairo",city:"Cairo",cat:"food",budget:"low",season:"any",crowd:"crowded",for:["solo", "friends", "family"],age:["adult"],dur:2,rating:4.2,cf:0.76812,desc:"Choose your fresh Nile fish and have it cooked on-site with Egyptian spices."},
+{id:69,name:"Dahab Bedouin Cooking Class",city:"Dahab",cat:"food",budget:"medium",season:"any",crowd:"quiet",for:["solo", "couple", "friends"],age:["adult"],dur:3,rating:4.5,cf:0.73285,desc:"Learn to cook traditional Bedouin dishes with a local family in Dahab."},
+{id:70,name:"Hurghada Marina Dining Strip",city:"Hurghada",cat:"food",budget:"medium",season:"any",crowd:"moderate",for:["couple", "friends", "family"],age:["adult", "senior"],dur:2,rating:4.3,cf:0.79697,desc:"Waterfront restaurants with international and Egyptian cuisine at the modern marina."},
+{id:71,name:"Siwa Oasis Hot Springs",city:"Siwa",cat:"wellness",budget:"medium",season:"spring",crowd:"quiet",for:["couple", "solo"],age:["adult", "senior"],dur:6,rating:4.8,cf:0.70376,desc:"Natural hot spring pools in the desert oasis, perfect for relaxation."},
+{id:72,name:"Hurghada Spa Resorts",city:"Hurghada",cat:"wellness",budget:"high",season:"any",crowd:"quiet",for:["couple", "solo"],age:["adult", "senior"],dur:6,rating:4.5,cf:0.75032,desc:"World-class spa centers in luxury Red Sea resorts with thalassotherapy."},
+{id:73,name:"Sharm El-Sheikh Wellness Resort",city:"Sharm El-Sheikh",cat:"wellness",budget:"high",season:"any",crowd:"quiet",for:["couple", "solo"],age:["adult", "senior"],dur:6,rating:4.6,cf:0.69512,desc:"Premium retreat with yoga, meditation, and holistic treatments by the Red Sea."},
+{id:74,name:"Siwa Salt Lake Float",city:"Siwa",cat:"wellness",budget:"low",season:"spring",crowd:"quiet",for:["solo", "couple", "friends"],age:["adult"],dur:3,rating:4.7,cf:0.74424,desc:"Natural hyper-saline lake where you float effortlessly, Dead Sea style."},
+{id:75,name:"Luxor Yoga Retreat",city:"Luxor",cat:"wellness",budget:"medium",season:"winter",crowd:"quiet",for:["solo", "couple"],age:["adult", "senior"],dur:6,rating:4.4,cf:0.80265,desc:"Sunrise yoga sessions with views of the Nile and Theban mountains."},
+{id:76,name:"Aswan Nile Hammam",city:"Aswan",cat:"wellness",budget:"low",season:"any",crowd:"quiet",for:["solo", "couple"],age:["adult", "senior"],dur:2,rating:4.3,cf:0.74699,desc:"Traditional Egyptian hammam experience in the heart of Aswan."},
+{id:77,name:"Marsa Alam Diving Retreat",city:"Marsa Alam",cat:"wellness",budget:"medium",season:"any",crowd:"quiet",for:["solo", "couple", "friends"],age:["adult"],dur:6,rating:4.6,cf:0.7011,desc:"Holistic underwater therapy retreat with meditation and deep-sea diving."},
+{id:78,name:"Cairo Rooftop Meditation",city:"Cairo",cat:"wellness",budget:"low",season:"any",crowd:"quiet",for:["solo", "couple"],age:["adult"],dur:2,rating:4.2,cf:0.79651,desc:"Morning meditation sessions on rooftops overlooking the city and pyramids."},
+{id:79,name:"Nubian Wellness Village",city:"Aswan",cat:"wellness",budget:"medium",season:"winter",crowd:"quiet",for:["couple", "solo"],age:["adult", "senior"],dur:4,rating:4.5,cf:0.65662,desc:"Eco-lodge wellness retreat on a Nile island with Nubian healing traditions."},
+{id:80,name:"Ain El-Sira Lake Cairo",city:"Cairo",cat:"wellness",budget:"low",season:"any",crowd:"quiet",for:["solo", "couple"],age:["adult", "senior"],dur:2,rating:3.9,cf:0.79384,desc:"Historic spring-fed lake in old Cairo used for relaxation since pharaonic times."},
+{id:81,name:"Fayoum Lotus Lake",city:"Fayoum",cat:"wellness",budget:"low",season:"spring",crowd:"quiet",for:["couple", "solo"],age:["adult", "senior"],dur:3,rating:4.3,cf:0.71818,desc:"Serene oasis lake surrounded by lotus flowers, perfect for mindful walks."},
+{id:82,name:"Dahab Sound Bath Retreat",city:"Dahab",cat:"wellness",budget:"medium",season:"any",crowd:"quiet",for:["solo", "couple"],age:["adult"],dur:4,rating:4.4,cf:0.72365,desc:"Tibetan bowl sound healing sessions in an open-air desert setting."},
+{id:83,name:"Al-Azhar Mosque",city:"Cairo",cat:"religious",budget:"low",season:"any",crowd:"crowded",for:["family", "couple", "solo"],age:["teen", "adult", "senior"],dur:2,rating:4.7,cf:0.79791,desc:"One of the oldest mosques in Cairo, over 1000 years of Islamic scholarship."},
+{id:84,name:"Hanging Church (Cairo)",city:"Cairo",cat:"religious",budget:"low",season:"any",crowd:"moderate",for:["family", "couple", "solo"],age:["teen", "adult", "senior"],dur:1,rating:4.5,cf:0.78229,desc:"One of the oldest Coptic churches in Egypt, built above a Roman gatehouse."},
+{id:85,name:"Saint Catherine Monastery",city:"South Sinai",cat:"religious",budget:"medium",season:"spring",crowd:"moderate",for:["solo", "couple", "friends"],age:["adult", "senior"],dur:6,rating:4.8,cf:0.71832,desc:"One of the oldest working Christian monasteries in the world."},
+{id:86,name:"Mohamed Ali Mosque (Citadel)",city:"Cairo",cat:"religious",budget:"low",season:"any",crowd:"crowded",for:["family", "couple", "solo", "friends"],age:["teen", "adult", "senior"],dur:2,rating:4.6,cf:0.78615,desc:"Magnificent Ottoman mosque inside the Saladin Citadel."},
+{id:87,name:"Amr Ibn Al-As Mosque",city:"Cairo",cat:"religious",budget:"low",season:"any",crowd:"moderate",for:["family", "solo", "couple"],age:["teen", "adult", "senior"],dur:1,rating:4.4,cf:0.79733,desc:"The first mosque built in Egypt and Africa, 641 AD."},
+{id:88,name:"Ben Ezra Synagogue",city:"Cairo",cat:"religious",budget:"low",season:"any",crowd:"quiet",for:["solo", "couple"],age:["adult", "senior"],dur:1,rating:4.3,cf:0.76143,desc:"One of the oldest synagogues in Egypt."},
+{id:89,name:"Abu Mena Ruins",city:"Alexandria",cat:"religious",budget:"low",season:"winter",crowd:"quiet",for:["solo", "couple"],age:["adult"],dur:2,rating:4.1,cf:0.74876,desc:"UNESCO World Heritage Site early Christian pilgrimage center."},
+{id:90,name:"Saint Mark's Cathedral",city:"Alexandria",cat:"religious",budget:"low",season:"any",crowd:"quiet",for:["family", "couple", "solo"],age:["adult", "senior"],dur:1,rating:4.4,cf:0.81101,desc:"One of the most important Coptic Orthodox cathedrals in Egypt."},
+{id:91,name:"Imam Hussain Mosque",city:"Cairo",cat:"religious",budget:"low",season:"any",crowd:"crowded",for:["family", "solo"],age:["teen", "adult", "senior"],dur:1,rating:4.5,cf:0.76915,desc:"Shia mosque next to Khan El-Khalili housing the head of Imam Hussain."},
+{id:92,name:"Mosque of Ibn Tulun",city:"Cairo",cat:"religious",budget:"low",season:"any",crowd:"quiet",for:["solo", "couple", "friends"],age:["adult", "senior"],dur:1,rating:4.5,cf:0.77885,desc:"One of the oldest and largest mosques in Cairo, built 876-879 AD."},
+{id:93,name:"Wadi El Natrun Monasteries",city:"Wadi Natrun",cat:"religious",budget:"low",season:"winter",crowd:"quiet",for:["solo", "couple"],age:["adult", "senior"],dur:4,rating:4.3,cf:0.7252,desc:"Ancient Coptic desert monasteries still inhabited by monks."},
+{id:94,name:"Sidi Bishr Mosque",city:"Alexandria",cat:"religious",budget:"low",season:"any",crowd:"moderate",for:["family", "solo"],age:["teen", "adult", "senior"],dur:1,rating:4.1,cf:0.74305,desc:"Beloved beachfront mosque in Alexandria with a distinctive minaret."},
+{id:95,name:"Mosque of Muhammad Ibn Qalaun",city:"Cairo",cat:"religious",budget:"low",season:"any",crowd:"quiet",for:["solo", "couple"],age:["adult"],dur:1,rating:4.3,cf:0.73331,desc:"Mamluk-era mosque-madrassa complex in the heart of Islamic Cairo."},
+{id:96,name:"Aswan Nubian Mosque",city:"Aswan",cat:"religious",budget:"low",season:"any",crowd:"quiet",for:["family", "solo"],age:["teen", "adult", "senior"],dur:1,rating:4.0,cf:0.8495,desc:"Colorful Nubian-style mosque on the West Bank of the Nile in Aswan."},
+{id:97,name:"Luxor Church of the Virgin",city:"Luxor",cat:"religious",budget:"low",season:"any",crowd:"quiet",for:["family", "solo", "couple"],age:["adult", "senior"],dur:1,rating:4.1,cf:0.75265,desc:"Ancient Coptic church believed to be on the route of the Holy Family."},
+{id:98,name:"Ras Gharib Church",city:"Ras Gharib",cat:"religious",budget:"low",season:"any",crowd:"quiet",for:["solo", "couple"],age:["adult", "senior"],dur:1,rating:3.9,cf:0.76375,desc:"Peaceful Coptic church overlooking the Red Sea in a small fishing town."},
+{id:99,name:"Great Mosque of Tanta",city:"Tanta",cat:"religious",budget:"low",season:"any",crowd:"moderate",for:["family", "solo"],age:["teen", "adult", "senior"],dur:1,rating:4.2,cf:0.73694,desc:"Major mosque in the Delta city of Tanta, site of Egypt's largest annual moulid."},
+{id:100,name:"Sohag White Monastery",city:"Sohag",cat:"religious",budget:"low",season:"winter",crowd:"quiet",for:["solo", "couple"],age:["adult", "senior"],dur:2,rating:4.2,cf:0.71105,desc:"5th century Coptic monastery built from blocks of a pharaonic temple."},
+{id:101,name:"White Desert",city:"Farafra",cat:"nature",budget:"medium",season:"winter",crowd:"quiet",for:["solo", "friends", "couple"],age:["teen", "adult"],dur:6,rating:4.9,cf:0.74034,desc:"Surreal chalk-white rock formations in the Western Desert."},
+{id:102,name:"Wadi El-Rayan",city:"Fayoum",cat:"nature",budget:"low",season:"winter",crowd:"moderate",for:["family", "friends", "couple"],age:["teen", "adult"],dur:6,rating:4.5,cf:0.80184,desc:"Protected area with waterfalls, lakes, and wildlife in Fayoum."},
+{id:103,name:"Ras Mohamed National Park",city:"Sharm El-Sheikh",cat:"nature",budget:"medium",season:"any",crowd:"moderate",for:["friends", "couple", "solo"],age:["teen", "adult"],dur:6,rating:4.7,cf:0.76786,desc:"Egypt's first national park with stunning coral reefs."},
+{id:104,name:"Colored Canyon",city:"South Sinai",cat:"nature",budget:"medium",season:"winter",crowd:"moderate",for:["friends", "couple", "solo"],age:["teen", "adult"],dur:4,rating:4.6,cf:0.67429,desc:"Stunning narrow canyon with colorful rock formations in Sinai."},
+{id:105,name:"Fayoum Oasis",city:"Fayoum",cat:"nature",budget:"low",season:"winter",crowd:"quiet",for:["family", "couple", "solo"],age:["teen", "adult", "senior"],dur:6,rating:4.3,cf:0.73822,desc:"Lush green oasis with ancient waterwheels, lakes, and fossils."},
+{id:106,name:"Bahariya Oasis",city:"Bahariya",cat:"nature",budget:"medium",season:"winter",crowd:"quiet",for:["solo", "friends", "couple"],age:["adult"],dur:6,rating:4.4,cf:0.75247,desc:"Gateway to the Black and White Deserts."},
+{id:107,name:"Nile Cruise (Luxor–Aswan)",city:"Luxor",cat:"nature",budget:"high",season:"winter",crowd:"moderate",for:["family", "couple"],age:["adult", "senior"],dur:6,rating:4.8,cf:0.74408,desc:"Classic Nile cruise passing ancient temples and lush riverbanks."},
+{id:108,name:"Lake Nasser",city:"Aswan",cat:"nature",budget:"medium",season:"winter",crowd:"quiet",for:["couple", "solo", "friends"],age:["adult"],dur:6,rating:4.5,cf:0.78743,desc:"One of the world's largest man-made lakes with Nubian temples."},
+{id:109,name:"Dakhla Oasis",city:"Dakhla",cat:"nature",budget:"medium",season:"winter",crowd:"quiet",for:["solo", "couple", "friends"],age:["adult"],dur:6,rating:4.4,cf:0.69781,desc:"Remote inner oasis with hot springs, mud-brick villages, and ancient ruins."},
+{id:110,name:"Farafra Oasis",city:"Farafra",cat:"nature",budget:"low",season:"winter",crowd:"quiet",for:["solo", "couple"],age:["adult"],dur:4,rating:4.3,cf:0.75645,desc:"The smallest and most remote of Egypt's Western Desert oases."},
+{id:111,name:"Wadi Degla Protectorate",city:"Cairo",cat:"nature",budget:"low",season:"winter",crowd:"moderate",for:["friends", "family", "couple"],age:["teen", "adult"],dur:4,rating:4.2,cf:0.73386,desc:"Desert canyon nature reserve just outside Cairo, great for hiking and fossils."},
+{id:112,name:"Petrified Forest Cairo",city:"Cairo",cat:"nature",budget:"low",season:"winter",crowd:"quiet",for:["solo", "friends", "couple"],age:["adult"],dur:2,rating:4.0,cf:0.78407,desc:"35-million-year-old petrified forest hidden in the Cairo desert."},
+{id:113,name:"Wadi El-Hitan (Whale Valley)",city:"Fayoum",cat:"nature",budget:"medium",season:"winter",crowd:"quiet",for:["solo", "couple", "friends"],age:["adult"],dur:4,rating:4.7,cf:0.78658,desc:"UNESCO World Heritage Site with 40-million-year-old whale fossils in the desert."},
+{id:114,name:"Gebel Elba Biosphere",city:"Halayeb",cat:"nature",budget:"medium",season:"winter",crowd:"quiet",for:["solo", "friends"],age:["adult"],dur:6,rating:4.6,cf:0.67908,desc:"Egypt's most biodiverse area on the Red Sea coast near Sudan."},
+{id:115,name:"El-Agouzain Bird Sanctuary",city:"Aswan",cat:"nature",budget:"low",season:"winter",crowd:"quiet",for:["solo", "couple", "friends"],age:["adult", "senior"],dur:3,rating:4.2,cf:0.70886,desc:"Nile island bird sanctuary with over 100 species of migratory birds."},
+{id:116,name:"Zaranik Protectorate",city:"North Sinai",cat:"nature",budget:"low",season:"autumn",crowd:"quiet",for:["solo", "couple"],age:["adult"],dur:4,rating:4.1,cf:0.74157,desc:"Wetland bird migration hotspot on the Mediterranean coast of Sinai."},
+{id:117,name:"Lake Qarun",city:"Fayoum",cat:"nature",budget:"low",season:"winter",crowd:"moderate",for:["family", "couple", "friends"],age:["teen", "adult", "senior"],dur:4,rating:4.1,cf:0.78039,desc:"Ancient salt lake and major wintering area for migratory birds."},
+{id:118,name:"Sinai Desert Stargazing",city:"South Sinai",cat:"nature",budget:"medium",season:"any",crowd:"quiet",for:["solo", "couple", "friends"],age:["teen", "adult"],dur:4,rating:4.8,cf:0.73337,desc:"Some of the darkest skies in the world for stargazing in the Sinai wilderness."},
+{id:119,name:"Arous El-Bahar Mangroves",city:"Marsa Alam",cat:"nature",budget:"low",season:"any",crowd:"quiet",for:["solo", "couple", "friends"],age:["adult"],dur:3,rating:4.3,cf:0.75948,desc:"Ancient mangrove forest on the Red Sea coast, a nesting ground for rare birds."},
+{id:120,name:"Ras Gharib Coral Garden",city:"Ras Gharib",cat:"nature",budget:"medium",season:"any",crowd:"quiet",for:["solo", "couple", "friends"],age:["adult"],dur:4,rating:4.5,cf:0.66508,desc:"Pristine offshore reef with hard corals and pelagic fish rarely visited by tourists."},
+{id:121,name:"Blue Hole Diving (Dahab)",city:"Dahab",cat:"adventure",budget:"medium",season:"any",crowd:"moderate",for:["solo", "friends", "couple"],age:["teen", "adult"],dur:6,rating:4.8,cf:0.65827,desc:"World-famous underwater sinkhole, one of the best dive sites globally."},
+{id:122,name:"Mount Sinai Sunrise Hike",city:"South Sinai",cat:"adventure",budget:"low",season:"spring",crowd:"moderate",for:["solo", "friends", "couple"],age:["teen", "adult"],dur:6,rating:4.7,cf:0.72913,desc:"Midnight hike to Mount Sinai summit for a breathtaking sunrise."},
+{id:123,name:"Hot Air Balloon over Luxor",city:"Luxor",cat:"adventure",budget:"high",season:"winter",crowd:"moderate",for:["couple", "family", "friends"],age:["teen", "adult", "senior"],dur:2,rating:4.9,cf:0.73786,desc:"Magical sunrise balloon ride over the Valley of the Kings."},
+{id:124,name:"Kitesurfing El-Gouna",city:"Hurghada",cat:"adventure",budget:"high",season:"any",crowd:"moderate",for:["solo", "friends", "couple"],age:["teen", "adult"],dur:6,rating:4.5,cf:0.74975,desc:"Egypt's kitesurfing capital with world-class wind conditions."},
+{id:125,name:"Desert Safari (Western Desert)",city:"Cairo",cat:"adventure",budget:"medium",season:"winter",crowd:"quiet",for:["solo", "friends", "couple"],age:["teen", "adult"],dur:6,rating:4.6,cf:0.71447,desc:"Multi-day safari with stargazing and sandboarding."},
+{id:126,name:"Snorkeling Giftun Island",city:"Hurghada",cat:"adventure",budget:"medium",season:"any",crowd:"moderate",for:["family", "friends", "couple"],age:["teen", "adult", "senior"],dur:6,rating:4.6,cf:0.79871,desc:"Protected coral reef island with vibrant marine life."},
+{id:127,name:"Sandboarding in Siwa",city:"Siwa",cat:"adventure",budget:"medium",season:"winter",crowd:"quiet",for:["solo", "friends", "couple"],age:["teen", "adult"],dur:3,rating:4.4,cf:0.76816,desc:"Thrilling sandboarding down the Great Sand Sea dunes."},
+{id:128,name:"Kayaking on the Nile Aswan",city:"Aswan",cat:"adventure",budget:"low",season:"winter",crowd:"quiet",for:["solo", "friends", "couple"],age:["teen", "adult"],dur:3,rating:4.3,cf:0.79813,desc:"Peaceful kayaking through Nile islands near Aswan."},
+{id:129,name:"Rock Climbing in Sinai",city:"South Sinai",cat:"adventure",budget:"medium",season:"spring",crowd:"quiet",for:["solo", "friends"],age:["teen", "adult"],dur:6,rating:4.4,cf:0.69344,desc:"World-class rock climbing in the Sinai granite mountains."},
+{id:130,name:"Quad Biking Hurghada Desert",city:"Hurghada",cat:"adventure",budget:"medium",season:"winter",crowd:"moderate",for:["friends", "couple", "family"],age:["teen", "adult"],dur:3,rating:4.3,cf:0.73389,desc:"Thrilling quad bike rides through golden desert dunes."},
+{id:131,name:"Wadi Rum-Style Sinai Safari",city:"South Sinai",cat:"adventure",budget:"medium",season:"winter",crowd:"quiet",for:["solo", "couple", "friends"],age:["teen", "adult"],dur:6,rating:4.5,cf:0.69281,desc:"Camel-and-jeep Bedouin safari through the dramatic Sinai desert landscape."},
+{id:132,name:"Parasailing Sharm El-Sheikh",city:"Sharm El-Sheikh",cat:"adventure",budget:"medium",season:"any",crowd:"moderate",for:["friends", "couple", "family"],age:["teen", "adult"],dur:2,rating:4.2,cf:0.8138,desc:"Soar above Na'ama Bay with panoramic views of the Red Sea and Sinai mountains."},
+{id:133,name:"Wadi Hammamat Hike",city:"Qena",cat:"adventure",budget:"low",season:"winter",crowd:"quiet",for:["solo", "friends", "couple"],age:["teen", "adult"],dur:4,rating:4.3,cf:0.7543,desc:"Ancient trade route through dramatic rock formations with pharaonic inscriptions."},
+{id:134,name:"Nile Rafting Aswan",city:"Aswan",cat:"adventure",budget:"medium",season:"winter",crowd:"moderate",for:["friends", "couple", "family"],age:["teen", "adult"],dur:3,rating:4.4,cf:0.77337,desc:"White-water rafting through the Nile cataracts south of Aswan."},
+{id:135,name:"Scuba Diving Marsa Alam",city:"Marsa Alam",cat:"adventure",budget:"medium",season:"any",crowd:"quiet",for:["solo", "friends", "couple"],age:["adult"],dur:6,rating:4.7,cf:0.76537,desc:"Pristine coral reefs with dugongs, dolphins, and hammerhead sharks."},
+{id:136,name:"Windsurfing Hurghada",city:"Hurghada",cat:"adventure",budget:"medium",season:"any",crowd:"moderate",for:["solo", "friends", "couple"],age:["teen", "adult"],dur:4,rating:4.3,cf:0.72577,desc:"Consistent Red Sea winds make Hurghada a top windsurfing destination."},
+{id:137,name:"Wadi Feiran Trekking",city:"South Sinai",cat:"adventure",budget:"low",season:"spring",crowd:"quiet",for:["solo", "friends", "couple"],age:["teen", "adult"],dur:6,rating:4.4,cf:0.75843,desc:"Trek through the largest oasis in Sinai with ancient palms and monastery ruins."},
+{id:138,name:"Sea Kayaking Red Sea Islands",city:"Hurghada",cat:"adventure",budget:"medium",season:"any",crowd:"quiet",for:["solo", "friends", "couple"],age:["teen", "adult"],dur:6,rating:4.4,cf:0.72441,desc:"Kayak between uninhabited Red Sea islands with crystal-clear water."},
+{id:139,name:"Dune Bashing Siwa",city:"Siwa",cat:"adventure",budget:"medium",season:"winter",crowd:"quiet",for:["friends", "couple"],age:["teen", "adult"],dur:3,rating:4.3,cf:0.70593,desc:"Adrenaline-fueled 4x4 dune bashing in the Great Sand Sea."},
+{id:140,name:"Night Dive Sharm El-Sheikh",city:"Sharm El-Sheikh",cat:"adventure",budget:"high",season:"any",crowd:"moderate",for:["solo", "friends", "couple"],age:["adult"],dur:3,rating:4.8,cf:0.72335,desc:"Night dive to see phosphorescent plankton, sleeping reef sharks, and octopus."},
+{id:141,name:"Felucca Overnight Nile Trip",city:"Aswan",cat:"adventure",budget:"low",season:"winter",crowd:"quiet",for:["solo", "friends", "couple"],age:["teen", "adult"],dur:6,rating:4.6,cf:0.748,desc:"Sleep under the stars on a traditional Nile sailboat between Aswan and Edfu."},
+{id:142,name:"Surfing at Safaga",city:"Hurghada",cat:"adventure",budget:"medium",season:"any",crowd:"moderate",for:["solo", "friends"],age:["teen", "adult"],dur:4,rating:4.2,cf:0.73451,desc:"Consistent wave breaks and thermal winds make Safaga a growing surf destination."},
+{id:143,name:"ATV Desert Sinai",city:"South Sinai",cat:"adventure",budget:"medium",season:"winter",crowd:"moderate",for:["friends", "couple", "family"],age:["teen", "adult"],dur:3,rating:4.3,cf:0.77586,desc:"Off-road ATV adventure through Sinai desert canyons and Bedouin villages."},
+{id:144,name:"Free Diving Dahab",city:"Dahab",cat:"adventure",budget:"medium",season:"any",crowd:"quiet",for:["solo", "friends", "couple"],age:["adult"],dur:4,rating:4.7,cf:0.81776,desc:"World-class free diving courses and spots in Dahab's legendary Blue Hole."},
+{id:145,name:"White Desert Camping",city:"Farafra",cat:"adventure",budget:"medium",season:"winter",crowd:"quiet",for:["solo", "friends", "couple"],age:["teen", "adult"],dur:6,rating:4.9,cf:0.72139,desc:"Overnight camp among the alien white chalk formations under a blanket of stars."},
+{id:146,name:"Kite Surfing Ras Sidr",city:"Ras Sidr",cat:"adventure",budget:"medium",season:"any",crowd:"moderate",for:["solo", "friends", "couple"],age:["teen", "adult"],dur:6,rating:4.4,cf:0.77006,desc:"North Sinai kite surfing spot with consistent winds and flat water."},
+{id:147,name:"Abseiling Wadi Rahaha",city:"South Sinai",cat:"adventure",budget:"medium",season:"spring",crowd:"quiet",for:["solo", "friends"],age:["teen", "adult"],dur:4,rating:4.4,cf:0.688,desc:"Rappel down Sinai granite cliffs beside the route Moses walked."},
+{id:148,name:"Speedboat Red Sea Sharm",city:"Sharm El-Sheikh",cat:"adventure",budget:"medium",season:"any",crowd:"moderate",for:["friends", "couple", "family"],age:["teen", "adult", "senior"],dur:3,rating:4.2,cf:0.77636,desc:"High-speed boat tour to the islands and snorkeling spots around Sharm."},
+{id:149,name:"Paragliding over Luxor",city:"Luxor",cat:"adventure",budget:"high",season:"winter",crowd:"quiet",for:["solo", "couple"],age:["teen", "adult"],dur:2,rating:4.6,cf:0.68347,desc:"Tandem paragliding over Luxor's temples and the Nile Valley."},
+{id:150,name:"Cairo Tower Zip Line",city:"Cairo",cat:"adventure",budget:"medium",season:"any",crowd:"moderate",for:["friends", "couple", "family"],age:["teen", "adult"],dur:2,rating:4.1,cf:0.70221,desc:"Urban zip-line experience across Gezira Island with views of the Nile."}
+];
+// ═══════════════════════════════════════════════════════
+// WAYNX RECOMMENDER ENGINE v2.0
+// 17-Dimensional Weighted Cosine Similarity
+// + Collaborative Filtering Blend
+// + Greedy Geographical Clustering Itinerary
+// + Confidence Score Evaluation
+// ═══════════════════════════════════════════════════════
+
+// ── DIMENSION INDICES (17-D vector layout) ──
+// [0-6]  Category match   (7 cats, one-hot, weighted 0.30 combined)
+// [7]    Budget compat.   (ordinal, weight 0.20)
+// [8]    Crowd compat.    (ordinal, weight 0.10)
+// [9-12] Companion fit    (4-way one-hot, weight 0.15 combined)
+// [13-15]Age suitability  (3-way one-hot, weight 0.08 combined)
+// [16]   Season adjacency (circular, weight 0.10)
+// CF + Rating applied post-cosine as a blend signal
+
+const CATS      = ['history','beach','food','wellness','religious','nature','adventure'];
+const COMPANIONS= ['solo','couple','family','friends'];
+const AGES      = ['teen','adult','senior'];
+const SEASONS   = ['winter','spring','summer','autumn'];
+
+// Per-dimension weights — must sum to ~1.0
+const W = {
+  cat:      0.30,   // per category match
+  budget:   0.20,   // budget tier compatibility
+  crowd:    0.10,   // crowd sensitivity
+  companion:0.15,   // travel companion fit
+  age:      0.08,   // age group suitability
+  season:   0.10,   // season adjacency (circular)
+  cf_rating:0.07,   // CF + rating blend
+};
+
+// Budget ordinal encoding
+const BUDGET_ORD  = { low:0, medium:1, high:2 };
+// Crowd ordinal encoding
+const CROWD_ORD   = { quiet:0, moderate:1, crowded:2, no_preference:1 };
+// Season circular distance helper
+function seasonDist(s1, s2) {
+  if (s2 === 'any') return 0;
+  const i1 = SEASONS.indexOf(s1), i2 = SEASONS.indexOf(s2);
+  if (i1 < 0 || i2 < 0) return 2;
+  const diff = Math.abs(i1 - i2);
+  return Math.min(diff, 4 - diff); // circular: max dist = 2
+}
+// Season adjacency score: 1.0 exact, 0.7 adjacent, 0.3 opposite
+function seasonScore(userSeason, placeSeason) {
+  if (placeSeason === 'any') return 1.0;
+  const d = seasonDist(userSeason, placeSeason);
+  if (d === 0) return 1.0;
+  if (d === 1) return 0.7;
+  return 0.3;
+}
+
+// ── BUILD USER VECTOR (17-D weighted) ──
+function buildUserVec(u) {
+  const v = new Array(17).fill(0);
+  const interests = u.interests || [];
+
+  // [0-6] Category: distribute weight evenly across selected interests
+  const catW = interests.length > 0 ? W.cat / interests.length : 0;
+  CATS.forEach((c, i) => { if (interests.includes(c)) v[i] = catW; });
+
+  // [7] Budget ordinal (normalised 0→1 over 3 tiers)
+  v[7] = (BUDGET_ORD[u.budget] ?? 1) / 2 * W.budget;
+
+  // [8] Crowd ordinal (normalised 0→1)
+  v[8] = (CROWD_ORD[u.crowd_preference] ?? 1) / 2 * W.crowd;
+
+  // [9-12] Companion one-hot
+  const compW = W.companion;
+  COMPANIONS.forEach((c, i) => { v[9 + i] = (c === u.travel_companion ? 1 : 0) * compW; });
+
+  // [13-15] Age one-hot
+  const ageW = W.age;
+  AGES.forEach((a, i) => { v[13 + i] = (a === u.age_group ? 1 : 0) * ageW; });
+
+  // [16] Season (user always gets max)
+  v[16] = W.season;
+
+  return v;
+}
+
+// ── BUILD PLACE VECTOR (17-D weighted) ──
+function buildPlaceVec(p) {
+  const v = new Array(17).fill(0);
+
+  // [0-6] Category one-hot (place has exactly one cat)
+  const ci = CATS.indexOf(p.cat);
+  if (ci >= 0) v[ci] = W.cat;
+
+  // [7] Budget tier — place budget mapped to ordinal
+  v[7] = (BUDGET_ORD[p.budget] ?? 1) / 2 * W.budget;
+
+  // [8] Crowd — place crowd level
+  v[8] = (CROWD_ORD[p.crowd] ?? 1) / 2 * W.crowd;
+
+  // [9-12] Companion: place supports multiple, share weight
+  const pFor = p.for || [];
+  const compShare = pFor.length > 0 ? W.companion / pFor.length : 0;
+  COMPANIONS.forEach((c, i) => { v[9 + i] = pFor.includes(c) ? compShare : 0; });
+
+  // [13-15] Age: place supports multiple, share weight
+  const pAge = p.age || [];
+  const ageShare = pAge.length > 0 ? W.age / pAge.length : 0;
+  AGES.forEach((a, i) => { v[13 + i] = pAge.includes(a) ? ageShare : 0; });
+
+  // [16] Season score (circular adjacency, handled externally)
+  v[16] = W.season; // placeholder; real score applied in cosine
+
+  return v;
+}
+
+// ── WEIGHTED COSINE SIMILARITY ──
+function cosineSim(u, p) {
+  let dot = 0, nu = 0, np = 0;
+  for (let i = 0; i < u.length; i++) {
+    dot += u[i] * p[i];
+    nu  += u[i] * u[i];
+    np  += p[i] * p[i];
+  }
+  const denom = Math.sqrt(nu) * Math.sqrt(np);
+  return denom === 0 ? 0 : dot / denom;
+}
+
+// ── PENALTY ENGINE ──
+function computePenalties(userProfile, place) {
+  const penalties = [];
+  let totalPenalty = 0;
+
+  // HARD PENALTY: Budget mismatch upward (budget user → high place)
+  const uBudget = BUDGET_ORD[userProfile.budget] ?? 1;
+  const pBudget = BUDGET_ORD[place.budget] ?? 1;
+  if (pBudget > uBudget + 1) {
+    penalties.push({ type:'hard', dim:'budget', msg:'Exceeds budget tier', val:-0.20 });
+    totalPenalty -= 0.20;
+  } else if (pBudget > uBudget) {
+    penalties.push({ type:'soft', dim:'budget', msg:'Slightly above budget', val:-0.07 });
+    totalPenalty -= 0.07;
+  }
+
+  // HARD PENALTY: Crowd strict mismatch
+  const uCrowd = CROWD_ORD[userProfile.crowd_preference] ?? 1;
+  const pCrowd = CROWD_ORD[place.crowd] ?? 1;
+  if (userProfile.crowd_preference !== 'no_preference') {
+    const crowdDiff = Math.abs(uCrowd - pCrowd);
+    if (crowdDiff >= 2) {
+      penalties.push({ type:'hard', dim:'crowd', msg:'Opposite crowd environment', val:-0.15 });
+      totalPenalty -= 0.15;
+    } else if (crowdDiff === 1) {
+      penalties.push({ type:'soft', dim:'crowd', msg:'Slightly different crowd level', val:-0.05 });
+      totalPenalty -= 0.05;
+    }
+  }
+
+  // SOFT PENALTY: Companion mismatch
+  if (!place.for.includes(userProfile.travel_companion)) {
+    penalties.push({ type:'soft', dim:'companion', msg:'Not ideal for ' + userProfile.travel_companion, val:-0.08 });
+    totalPenalty -= 0.08;
+  }
+
+  // SOFT PENALTY: Age mismatch
+  if (!place.age.includes(userProfile.age_group)) {
+    penalties.push({ type:'soft', dim:'age', msg:'Not suited for ' + userProfile.age_group, val:-0.05 });
+    totalPenalty -= 0.05;
+  }
+
+  return { penalties, totalPenalty };
+}
+
+// ── CONFIDENCE SCORE ──
+// Evaluates how reliable the recommendation is based on:
+// 1. Raw similarity strength
+// 2. Number of matching dimensions
+// 3. CF signal quality
+// 4. Penalty severity
+function computeConfidence(sim, dimMatches, cfScore, penaltyTotal, totalDims) {
+  // Base: how high and consistent is the similarity?
+  const simStrength = Math.min(sim, 1.0);
+
+  // Dimension coverage: what fraction of relevant dims matched?
+  const coverage = dimMatches / totalDims;
+
+  // CF quality: interaction data support (0.5 = neutral)
+  const cfSignal = (cfScore - 0.5) * 2; // normalise to [-1,1], then clamp
+  const cfBoost = Math.max(0, Math.min(cfSignal * 0.15, 0.15));
+
+  // Penalty drag
+  const penaltyDrag = Math.abs(penaltyTotal) * 0.5;
+
+  const raw = (simStrength * 0.5) + (coverage * 0.3) + cfBoost - penaltyDrag;
+  return Math.min(1.0, Math.max(0.0, raw));
+}
+
+// ── SCORE ALL PLACES ──
+function scoreAllPlaces(userProfile) {
+  const uVec = buildUserVec(userProfile);
+
+  return PLACES.map(place => {
+    const pVec = buildPlaceVec(place);
+
+    // Apply circular season score to dimension 16
+    const ss = seasonScore(userProfile.season, place.season);
+    pVec[16] = ss * W.season;
+    uVec[16] = W.season;
+
+    // Core cosine similarity
+    let sim = cosineSim(uVec, pVec);
+
+    // Seasonal adjacency bonus (+0.05 for exact match)
+    if (place.season === userProfile.season || place.season === 'any') sim += 0.05;
+
+    // Penalties
+    const { penalties, totalPenalty } = computePenalties(userProfile, place);
+    sim = Math.max(0, sim + totalPenalty);
+
+    // CF + Rating blend (post-cosine boost)
+    const ratingNorm = (place.rating - 3.9) / (4.9 - 3.9); // normalise 3.9–4.9 → 0–1
+    const cfBlend = (place.cf * 0.6) + (ratingNorm * 0.4);
+    const finalScore = sim * (1 - W.cf_rating) + cfBlend * W.cf_rating;
+
+    // Dimension match count (for confidence)
+    let dimMatches = 0;
+    if ((userProfile.interests || []).includes(place.cat)) dimMatches++;
+    if (BUDGET_ORD[userProfile.budget] >= BUDGET_ORD[place.budget]) dimMatches++;
+    if (place.for.includes(userProfile.travel_companion)) dimMatches++;
+    if (place.age.includes(userProfile.age_group)) dimMatches++;
+    if (place.season === userProfile.season || place.season === 'any') dimMatches++;
+    if (Math.abs(CROWD_ORD[userProfile.crowd_preference??'no_preference'] - CROWD_ORD[place.crowd]) <= 1) dimMatches++;
+
+    const confidence = computeConfidence(sim, dimMatches, place.cf, totalPenalty, 6);
+
+    // Per-dimension contribution breakdown
+    const dims = {
+      cat:      (userProfile.interests||[]).includes(place.cat) ? W.cat : 0,
+      budget:   Math.max(0, W.budget - Math.abs(BUDGET_ORD[userProfile.budget??'medium'] - BUDGET_ORD[place.budget]) * 0.07),
+      season:   ss * W.season + (ss === 1 ? 0.05 : 0),
+      crowd:    Math.max(0, W.crowd * (1 - Math.abs(CROWD_ORD[userProfile.crowd_preference??'no_preference'] - CROWD_ORD[place.crowd]) * 0.4)),
+      companion:place.for.includes(userProfile.travel_companion) ? W.companion : 0,
+      age:      place.age.includes(userProfile.age_group) ? W.age : 0,
+      cf:       cfBlend * W.cf_rating,
+    };
+
+    return {
+      ...place, sim, finalScore, confidence, penalties, totalPenalty,
+      dimMatches, dims, uVec, pVec, cfBlend
+    };
+  }).sort((a, b) => b.finalScore - a.finalScore);
+}
+
+// ══════════════════════════════════════════════
+// GEOGRAPHIC CLUSTERING + GREEDY ITINERARY
+// ══════════════════════════════════════════════
+
+// City coordinates (lat, lon) — 34 Egyptian cities
+const CITY_COORDS = {
+  'Cairo':          [30.0444, 31.2357],
+  'Alexandria':     [31.2001, 29.9187],
+  'Luxor':          [25.6872, 32.6396],
+  'Aswan':          [24.0889, 32.8998],
+  'Hurghada':       [27.2579, 33.8116],
+  'Sharm El-Sheikh':[27.9158, 34.3300],
+  'Dahab':          [28.4876, 34.5122],
+  'Siwa':           [29.2031, 25.5195],
+  'Marsa Alam':     [25.0657, 34.8885],
+  'Ain Sokhna':     [29.5908, 32.3552],
+  'Fayoum':         [29.3084, 30.8428],
+  'Minya':          [28.1099, 30.7503],
+  'Bahariya':       [28.3422, 28.8671],
+  'Marsa Matrouh':  [31.3543, 27.2373],
+  'Port Said':      [31.2652, 32.3018],
+  'Qena':           [26.1645, 32.7233],
+  'Sohag':          [26.5569, 31.6948],
+  'Tanta':          [30.7865, 30.9977],
+  'Mansoura':       [31.0364, 31.3807],
+  'Farafra':        [27.0620, 27.9680],
+  'Dakhla':         [25.4890, 29.0055],
+  'Kharga':         [25.4490, 30.5490],
+  'Wadi Natrun':    [30.4300, 30.2600],
+  'North Sinai':    [30.9330, 34.1520],
+  'South Sinai':    [28.5000, 34.0000],
+  'Nuweiba':        [29.0664, 34.6700],
+  'Taba':           [29.4937, 34.8933],
+  'Ras Sidr':       [29.5920, 32.6630],
+  'Ras Gharib':     [28.3610, 33.0750],
+  'Edfu':           [24.9781, 32.8740],
+  'Kom Ombo':       [24.4517, 32.9285],
+  'Esna':           [25.2931, 32.5556],
+  'Halayeb':        [22.1500, 36.6333],
+  'Sharqia':        [30.5618, 31.6645],
+};
+
+// Precompute city-to-city distances (km) using Haversine
+const CITY_DIST = {};
+function haversine(c1, c2) {
+  const R = 6371;
+  const [lat1, lon1] = c1.map(x => x * Math.PI / 180);
+  const [lat2, lon2] = c2.map(x => x * Math.PI / 180);
+  const dLat = lat2 - lat1, dLon = lon2 - lon1;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLon/2)**2;
+  return R * 2 * Math.asin(Math.sqrt(a));
+}
+(function precomputeDistances() {
+  const cities = Object.keys(CITY_COORDS);
+  cities.forEach(c1 => {
+    CITY_DIST[c1] = {};
+    cities.forEach(c2 => {
+      CITY_DIST[c1][c2] = c1 === c2 ? 0 : haversine(CITY_COORDS[c1], CITY_COORDS[c2]);
+    });
+  });
+})();
+
+function cityDist(c1, c2) {
+  return (CITY_DIST[c1] && CITY_DIST[c1][c2]) ? CITY_DIST[c1][c2] : 999;
+}
+
+// Travel time in hours (km / 80 avg speed + 1h overhead)
+function travelHours(c1, c2) {
+  if (c1 === c2) return 0;
+  return cityDist(c1, c2) / 80 + 1;
+}
+
+// ── CLUSTER CITIES by geographic proximity ──
+// Simple greedy: pick top-scored city, cluster nearby cities within threshold
+function clusterCities(scoredPlaces, maxClusterDistKm=200) {
+  // Aggregate city scores from top N places
+  const cityScore = {}, cityCat = {}, cityPlaces = {};
+  scoredPlaces.slice(0,60).forEach(p => {
+    if (!cityScore[p.city]) { cityScore[p.city]=0; cityCat[p.city]=p.cat; cityPlaces[p.city]=[]; }
+    cityScore[p.city] += p.finalScore;
+    cityPlaces[p.city].push(p);
+  });
+
+  const cities = Object.keys(cityScore).sort((a,b)=>cityScore[b]-cityScore[a]);
+
+  // Greedy nearest-neighbour clustering: build clusters
+  const visited = new Set();
+  const clusters = [];
+
+  cities.forEach(anchor => {
+    if (visited.has(anchor)) return;
+    const cluster = [anchor];
+    visited.add(anchor);
+    // Add nearby cities to this cluster
+    cities.forEach(other => {
+      if (!visited.has(other) && cityDist(anchor, other) <= maxClusterDistKm) {
+        cluster.push(other);
+        visited.add(other);
+      }
+    });
+    clusters.push({
+      anchor,
+      cities: cluster,
+      score: cluster.reduce((s, c) => s + (cityScore[c]||0), 0),
+      cat: cityCat[anchor],
+      places: cluster.flatMap(c => cityPlaces[c]||[]).sort((a,b)=>b.finalScore-a.finalScore),
+    });
+  });
+
+  return clusters.sort((a,b) => b.score - a.score);
+}
+
+// ── MINIMUM STAY by category ──
+const MIN_STAY = { beach:2, wellness:2, adventure:2, nature:2, history:1, food:1, religious:1 };
+const DAILY_HOURS = 6; // usable activity hours per day
+
+// ── GREEDY ITINERARY BUILDER ──
+function buildItinerary(userProfile, scoredPlaces) {
+  const totalDays = userProfile.trip_duration_days || 7;
+  const clusters = clusterCities(scoredPlaces);
+
+  const used = new Set();
+  const destinations = [];
+  let daysLeft = totalDays;
+  let dayIndex = 1;
+  let prevCity = null;
+
+  for (const cluster of clusters) {
+    if (daysLeft <= 0) break;
+
+    const anchor = cluster.anchor;
+    const minStay = MIN_STAY[cluster.cat] || 1;
+    const allocDays = Math.min(
+      Math.max(minStay, Math.round(cluster.score * 2)),
+      daysLeft,
+      Math.ceil(cluster.places.length * 0.8)
+    );
+
+    // Travel time penalty: if > 300km from prev city, it costs half a day
+    const distFromPrev = prevCity ? cityDist(prevCity, anchor) : 0;
+    const travelNote = prevCity && distFromPrev > 0
+      ? `${Math.round(distFromPrev)}km from ${prevCity}`
+      : 'Start city';
+
+    // Build day-by-day activities using constraint-aware greedy packing
+    const dayList = [];
+    const cityPool = cluster.places.filter(p => !used.has(p.id));
+
+    for (let d = 0; d < allocDays; d++) {
+      let hoursLeft = DAILY_HOURS;
+      const acts = [];
+
+      // Greedy knapsack: pick highest-scoring places that fit in hoursLeft
+      const sorted = [...cityPool].filter(p => !used.has(p.id)).sort((a,b)=>b.finalScore-a.finalScore);
+      for (const p of sorted) {
+        const needed = Math.min(p.dur, hoursLeft);
+        if (needed <= 0) continue;
+        if (needed <= hoursLeft) {
+          acts.push({ ...p, allocHours: needed });
+          used.add(p.id);
+          hoursLeft -= needed;
+        }
+        if (hoursLeft <= 0) break;
+      }
+
+      dayList.push({ dayN: dayIndex, acts, hoursUsed: DAILY_HOURS - hoursLeft, free: hoursLeft });
+      dayIndex++;
+    }
+
+    destinations.push({ anchor, cities: cluster.cities, allocDays, minStay, cat: cluster.cat, dayList, distFromPrev, travelNote, clusterScore: cluster.score });
+    daysLeft -= allocDays;
+    prevCity = anchor;
+  }
+
+  return { totalDays, destinations, used };
+}
+
+// ══════════════════════════════════════════════
+// EVALUATION METRICS
+// ══════════════════════════════════════════════
+function computeMetrics(userProfile, results, itinerary) {
+  const top10 = results.slice(0, 10);
+
+  // 1. Mean Confidence Score
+  const meanConf = top10.reduce((s, r) => s + r.confidence, 0) / top10.length;
+
+  // 2. Category Precision: how many top-10 match user interests
+  const interests = userProfile.interests || [];
+  const catPrecision = top10.filter(r => interests.includes(r.cat)).length / top10.length;
+
+  // 3. Budget Compliance: fraction with no hard budget penalty
+  const budgetCompliance = top10.filter(r => !r.penalties.some(p=>p.dim==='budget'&&p.type==='hard')).length / top10.length;
+
+  // 4. Crowd Compliance: fraction with no hard crowd penalty
+  const crowdCompliance = top10.filter(r => !r.penalties.some(p=>p.dim==='crowd'&&p.type==='hard')).length / top10.length;
+
+  // 5. Score Spread (diversity signal): std dev of final scores
+  const scores = top10.map(r => r.finalScore);
+  const mean = scores.reduce((a,b)=>a+b,0)/scores.length;
+  const variance = scores.reduce((s,x)=>s+(x-mean)**2,0)/scores.length;
+  const scoreSpread = Math.sqrt(variance);
+
+  // 6. Itinerary Efficiency: total activity hours / total available hours
+  const totalActHours = itinerary.destinations.reduce((s,d)=>s+d.dayList.reduce((ss,day)=>ss+day.hoursUsed,0),0);
+  const totalAvail = itinerary.totalDays * DAILY_HOURS;
+  const efficiency = totalActHours / totalAvail;
+
+  // 7. Geographic Clustering Score: total travel distance (lower = better)
+  let totalTravelKm = 0;
+  for (let i = 1; i < itinerary.destinations.length; i++) {
+    totalTravelKm += cityDist(itinerary.destinations[i-1].anchor, itinerary.destinations[i].anchor);
+  }
+
+  // 8. CF Signal Strength: avg CF score of top 10
+  const cfStrength = top10.reduce((s,r)=>s+r.cfBlend,0)/top10.length;
+
+  return { meanConf, catPrecision, budgetCompliance, crowdCompliance, scoreSpread, efficiency, totalTravelKm, cfStrength };
+}
+
+// ══════════════════════════════════════════════
+// UI RENDERING
+// ══════════════════════════════════════════════
+let lastResults = null, lastItinerary = null, lastMetrics = null, lastUser = null;
+
+function getUserProfile() {
+  const interests = [...document.querySelectorAll('#interests-sel .ms-opt.active')].map(el=>el.dataset.val);
+  return {
+    interests,
+    travel_companion: document.getElementById('companion').value,
+    budget: document.getElementById('budget').value,
+    age_group: document.getElementById('age_group').value,
+    crowd_preference: document.getElementById('crowd').value,
+    season: document.getElementById('season').value,
+    trip_duration_days: parseInt(document.getElementById('duration').value),
+  };
+}
+
+function generate() {
+  const u = getUserProfile();
+  lastUser = u;
+
+  // Score
+  const results = scoreAllPlaces(u);
+  lastResults = results;
+
+  // Itinerary
+  const itin = buildItinerary(u, results);
+  lastItinerary = itin;
+
+  // Metrics
+  const metrics = computeMetrics(u, results, itin);
+  lastMetrics = metrics;
+
+  // Render all
+  renderRecs(results, u);
+  renderPlan(itin, u);
+  renderEval(metrics, results, u);
+  renderDebug(results, u);
+
+  // Switch to recs
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-body').forEach(t=>t.classList.remove('active'));
+  document.querySelector('.tab').classList.add('active');
+  document.getElementById('tab-recs').classList.add('active');
+}
+
+function renderRecs(results, u) {
+  const top = results.slice(0, 15);
+  document.getElementById('recs-empty').style.display = 'none';
+  const el = document.getElementById('recs-content');
+  el.style.display = 'block';
+
+  const maxScore = top[0].finalScore;
+
+  let html = `<div style="font-size:10px;color:var(--muted);margin-bottom:14px;line-height:1.6">
+    Scoring <strong style="color:var(--txt)">${results.length} places</strong> · 
+    top score <strong style="color:var(--accent)">${(top[0].finalScore*100).toFixed(1)}%</strong> · 
+    mean confidence <strong style="color:var(--green)">${(results.slice(0,10).reduce((s,r)=>s+r.confidence,0)/10*100).toFixed(0)}%</strong>
+  </div>`;
+  html += '<div class="rec-list">';
+
+  top.forEach((r, i) => {
+    const pct = (r.finalScore * 100).toFixed(1);
+    const confPct = (r.confidence * 100).toFixed(0);
+    const barW = (r.finalScore / maxScore * 100).toFixed(0);
+    const penBadge = r.penalties.length === 0
+      ? '<span class="penalty-badge penalty-none">CLEAN</span>'
+      : r.penalties.filter(p=>p.type==='hard').length > 0
+        ? `<span class="penalty-badge penalty-hard">−${Math.abs(r.totalPenalty*100).toFixed(0)}%</span>`
+        : `<span class="penalty-badge penalty-soft">−${Math.abs(r.totalPenalty*100).toFixed(0)}%</span>`;
+
+    html += `<div class="rec-card" style="animation-delay:${i*30}ms" onclick="selectCard(this,${r.id})">
+      <div class="rec-rank ${i<3?'top3':''}">${i+1}</div>
+      <div>
+        <div class="rec-name">${r.name} ${penBadge}</div>
+        <div class="rec-tags">
+          <span class="tag tag-cat-${r.cat}">${r.cat}</span>
+          <span class="tag tag-city">📍 ${r.city}</span>
+          <span class="tag tag-budget-${r.budget}">${r.budget}</span>
+          <span class="tag tag-city">${r.season}</span>
+        </div>
+        <div class="sim-bar-wrap"><div class="sim-bar" style="width:${barW}%"></div></div>
+        <div class="rec-desc" style="margin-top:5px">${r.desc}</div>
+      </div>
+      <div class="rec-scores">
+        <div class="sim-score">${pct}%</div>
+        <div style="font-size:8px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase">Similarity</div>
+        <div class="conf-score">CONF ${confPct}%</div>
+        <div class="cf-score">CF ${(r.cfBlend*100).toFixed(0)}%</div>
+        <div class="rating-row">⭐ ${r.rating}</div>
+      </div>
+    </div>`;
+  });
+
+  html += '</div>';
+  el.innerHTML = html;
+}
+
+function selectCard(el, placeId) {
+  document.querySelectorAll('.rec-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function renderPlan(itin, u) {
+  document.getElementById('plan-empty').style.display = 'none';
+  const el = document.getElementById('plan-content');
+  el.style.display = 'block';
+
+  const totalActs = itin.destinations.reduce((s,d)=>s+d.dayList.reduce((ss,day)=>ss+day.acts.length,0),0);
+  const totalTravelKm = itin.destinations.reduce((s,d,i)=>i>0?s+d.distFromPrev:s, 0);
+
+  let html = `<div class="itin-summary">
+    <div class="is-stat"><div class="is-num">${itin.totalDays}</div><div class="is-lbl">Total Days</div></div>
+    <div class="is-stat"><div class="is-num">${itin.destinations.length}</div><div class="is-lbl">Clusters</div></div>
+    <div class="is-stat"><div class="is-num">${totalActs}</div><div class="is-lbl">Activities</div></div>
+    <div class="is-stat"><div class="is-num">${Math.round(totalTravelKm)}</div><div class="is-lbl">Travel km</div></div>
+  </div>`;
+
+  itin.destinations.forEach((dest, di) => {
+    html += `<div class="dest-block">
+      <div class="dest-head">
+        <div>
+          <div class="dest-city">📍 ${dest.anchor}</div>
+          <div class="dest-dist">${dest.travelNote} &nbsp;·&nbsp; min stay: ${dest.minStay}d &nbsp;·&nbsp; cluster: ${dest.cities.join(', ')}</div>
+        </div>
+        <div class="dest-cluster-score">SCORE ${dest.clusterScore.toFixed(2)}</div>
+        <div class="dest-days-badge">${dest.allocDays} DAY${dest.allocDays>1?'S':''}</div>
+      </div>`;
+
+    dest.dayList.forEach(day => {
+      html += `<div class="day-block">
+        <div class="day-col">
+          <div class="day-n">D${day.dayN}</div>
+          <div class="day-h">${day.hoursUsed}/${DAILY_HOURS}H</div>
+        </div>
+        <div class="acts-col">`;
+      if (day.acts.length) {
+        day.acts.forEach(act => {
+          html += `<div class="act-item">
+            <div class="act-dur">${act.allocHours}h</div>
+            <div class="act-name-col">
+              <div class="act-n">${act.name}</div>
+              <div class="act-c">${act.cat} · ${act.city}</div>
+            </div>
+            <div class="act-score">${(act.finalScore*100).toFixed(0)}%</div>
+            <div class="act-rating">⭐${act.rating}</div>
+          </div>`;
+        });
+      } else {
+        html += `<div class="free-slot">🌅 Free — explore at your pace</div>`;
+      }
+      html += `</div></div>`;
+    });
+
+    html += `</div>`;
+  });
+
+  el.innerHTML = html;
+}
+
+function renderEval(metrics, results, u) {
+  document.getElementById('eval-empty').style.display = 'none';
+  const el = document.getElementById('eval-content');
+  el.style.display = 'block';
+
+  const top10 = results.slice(0,10);
+  const penCounts = top10.reduce((s,r)=>({ hard:s.hard+r.penalties.filter(p=>p.type==='hard').length, soft:s.soft+r.penalties.filter(p=>p.type==='soft').length, clean:s.clean+(r.penalties.length===0?1:0) }),{hard:0,soft:0,clean:0});
+
+  let html = `
+  <div class="eval-section">
+    <div class="eval-title">Core Metrics — Top 10 Recommendations</div>
+    <div class="eval-grid">
+      <div class="eval-metric">
+        <div class="em-val em-green">${(metrics.meanConf*100).toFixed(0)}%</div>
+        <div class="em-lbl">Mean Confidence</div>
+        <div class="em-sub">Avg reliability across top 10 recs, accounting for dim coverage + CF signal</div>
+      </div>
+      <div class="eval-metric">
+        <div class="em-val em-accent">${(metrics.catPrecision*100).toFixed(0)}%</div>
+        <div class="em-lbl">Category Precision</div>
+        <div class="em-sub">Fraction of top 10 matching user's stated interests</div>
+      </div>
+      <div class="eval-metric">
+        <div class="em-val em-green">${(metrics.budgetCompliance*100).toFixed(0)}%</div>
+        <div class="em-lbl">Budget Compliance</div>
+        <div class="em-sub">No hard budget tier violations in top 10</div>
+      </div>
+      <div class="eval-metric">
+        <div class="em-val em-blue">${(metrics.crowdCompliance*100).toFixed(0)}%</div>
+        <div class="em-lbl">Crowd Compliance</div>
+        <div class="em-sub">No hard crowd mismatch in top 10</div>
+      </div>
+      <div class="eval-metric">
+        <div class="em-val em-purple">${(metrics.efficiency*100).toFixed(0)}%</div>
+        <div class="em-lbl">Schedule Efficiency</div>
+        <div class="em-sub">Actual activity hours / available hours (6h/day limit)</div>
+      </div>
+      <div class="eval-metric">
+        <div class="em-val em-accent">${Math.round(metrics.totalTravelKm)} km</div>
+        <div class="em-lbl">Total Travel Distance</div>
+        <div class="em-sub">Geographic clustering quality — lower is better</div>
+      </div>
+      <div class="eval-metric">
+        <div class="em-val em-green">${(metrics.cfStrength*100).toFixed(0)}%</div>
+        <div class="em-lbl">CF Signal Strength</div>
+        <div class="em-sub">Avg collaborative filtering score from 10,000 interaction records</div>
+      </div>
+      <div class="eval-metric">
+        <div class="em-val em-blue">${metrics.scoreSpread.toFixed(3)}</div>
+        <div class="em-lbl">Score Spread (σ)</div>
+        <div class="em-sub">Std deviation of top-10 scores — higher = more differentiated</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="eval-section">
+    <div class="eval-title">Penalty Distribution — Top 10</div>
+    <div class="eval-grid">
+      <div class="eval-metric"><div class="em-val em-green">${penCounts.clean}</div><div class="em-lbl">Clean (no penalty)</div></div>
+      <div class="eval-metric"><div class="em-val" style="color:var(--orange)">${penCounts.soft}</div><div class="em-lbl">Soft penalties</div></div>
+      <div class="eval-metric"><div class="em-val" style="color:var(--red)">${penCounts.hard}</div><div class="em-lbl">Hard penalties</div></div>
+      <div class="eval-metric"><div class="em-val em-accent">${top10.filter(r=>r.season===u.season||r.season==='any').length}</div><div class="em-lbl">Season matches</div></div>
+    </div>
+  </div>
+
+  <div class="eval-section">
+    <div class="eval-title">Dimension Weight Table</div>
+    <table class="dim-table">
+      <tr><th>#</th><th>Dimension</th><th>Range</th><th>Weight</th><th>Encoding</th><th>Impact</th></tr>
+      <tr><td class="td-mono">0–6</td><td class="td-name">Category Match</td><td class="td-mono">0 / W.cat</td><td class="td-weight">0.30</td><td class="td-mono">one-hot × interests</td><td><div class="inline-bar" style="width:90px;background:var(--accent)"></div></td></tr>
+      <tr><td class="td-mono">7</td><td class="td-name">Budget Compat.</td><td class="td-mono">0→1</td><td class="td-weight">0.20</td><td class="td-mono">ordinal[0,1,2]/2</td><td><div class="inline-bar" style="width:60px;background:var(--green)"></div></td></tr>
+      <tr><td class="td-mono">9–12</td><td class="td-name">Companion Fit</td><td class="td-mono">0 / W.comp</td><td class="td-weight">0.15</td><td class="td-mono">one-hot</td><td><div class="inline-bar" style="width:46px;background:var(--orange)"></div></td></tr>
+      <tr><td class="td-mono">8</td><td class="td-name">Crowd Sensitivity</td><td class="td-mono">0→1</td><td class="td-weight">0.10</td><td class="td-mono">ordinal[0,1,2]/2</td><td><div class="inline-bar" style="width:30px;background:var(--purple)"></div></td></tr>
+      <tr><td class="td-mono">16</td><td class="td-name">Season Adjacency</td><td class="td-mono">circular</td><td class="td-weight">0.10</td><td class="td-mono">+0.05 bonus exact</td><td><div class="inline-bar" style="width:30px;background:var(--blue)"></div></td></tr>
+      <tr><td class="td-mono">13–15</td><td class="td-name">Age Suitability</td><td class="td-mono">0 / W.age</td><td class="td-weight">0.08</td><td class="td-mono">one-hot</td><td><div class="inline-bar" style="width:24px;background:var(--red)"></div></td></tr>
+      <tr><td class="td-mono">post</td><td class="td-name">CF + Rating Blend</td><td class="td-mono">0→1</td><td class="td-weight">0.07</td><td class="td-mono">CF×0.6 + rating×0.4</td><td><div class="inline-bar" style="width:20px;background:var(--green)"></div></td></tr>
+    </table>
+  </div>`;
+
+  el.innerHTML = html;
+}
+
+function renderDebug(results, u) {
+  document.getElementById('debug-empty').style.display = 'none';
+  const el = document.getElementById('debug-content');
+  el.style.display = 'block';
+
+  const uVec = buildUserVec(u);
+  const top3 = results.slice(0,3);
+  const dimLabels = [
+    'history','beach','food','wellness','religious','nature','adventure',
+    'budget','crowd','solo','couple','family','friends','teen','adult','senior','season'
+  ];
+
+  let html = `<div style="margin-bottom:16px">
+    <div class="vd-label">USER VECTOR (17-D) — raw weighted values</div>
+    <div class="vector-display">`;
+  uVec.forEach((v,i) => {
+    html += `<span class="vd-dim ${v>0?'hit':'miss'}" title="${dimLabels[i]}">[${dimLabels[i]}: <strong>${v.toFixed(4)}</strong>]</span> `;
+  });
+  html += `</div></div>`;
+
+  top3.forEach((r, ri) => {
+    const pVec = buildPlaceVec(r);
+    html += `<div style="margin-bottom:16px">
+      <div class="vd-label">PLACE VECTOR #${ri+1}: ${r.name} (${r.city}) — score ${(r.finalScore*100).toFixed(1)}%</div>
+      <div class="vector-display">`;
+    pVec.forEach((v,i) => {
+      const uVal = uVec[i];
+      const cls = v>0 && uVal>0 ? 'hit' : v>0 ? 'near' : 'miss';
+      html += `<span class="vd-dim ${cls}" title="${dimLabels[i]}">[${dimLabels[i]}: <strong>${v.toFixed(4)}</strong>]</span> `;
+    });
+    html += `</div>`;
+
+    // Per-dim breakdown
+    html += `<div class="score-breakdown">
+      <div class="sb-title">Dimension Score Breakdown</div>`;
+    const dims = [
+      {label:'Category',     val:r.dims.cat,       cls:'d-cat',    max:W.cat},
+      {label:'Budget',       val:r.dims.budget,     cls:'d-budget', max:W.budget},
+      {label:'Season',       val:r.dims.season,     cls:'d-season', max:W.season+0.05},
+      {label:'Crowd',        val:r.dims.crowd,      cls:'d-crowd',  max:W.crowd},
+      {label:'Companion',    val:r.dims.companion,  cls:'d-comp',   max:W.companion},
+      {label:'Age',          val:r.dims.age,        cls:'d-age',    max:W.age},
+      {label:'CF+Rating',    val:r.dims.cf,         cls:'d-rating', max:W.cf_rating},
+    ];
+    dims.forEach(d => {
+      const pct = d.max>0 ? Math.min(100, d.val/d.max*100).toFixed(0) : 0;
+      html += `<div class="sb-row">
+        <div class="sb-dim">${d.label}</div>
+        <div class="sb-bar-wrap"><div class="sb-bar ${d.cls}" style="width:${pct}%"></div></div>
+        <div class="sb-score">${d.val.toFixed(4)}</div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  el.innerHTML = html;
+}
+
+// ── UI HELPERS ──
+function toggleInterest(el) {
+  el.classList.toggle('active');
+}
+
+function onDurSlide(el) {
+  const val = parseInt(el.value);
+  document.getElementById('dur-display').textContent = val;
+  const pct = ((val-2)/(14-2)*100).toFixed(1);
+  el.style.setProperty('--p', pct+'%');
+}
+
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-body').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+}
+
+// Auto-run on load for instant demo
+window.onload = () => generate();
+</script>
+</body>
+</html>
