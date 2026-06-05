@@ -1,144 +1,111 @@
-# AI Trip Planner — Backend API
+<div align="center">
+  <h1>🌍 WAYNX AI Trip Planner — Backend API</h1>
+  <p><strong>An intelligent, high-performance Go backend that uses Google Gemini to instantly generate perfectly validated, multi-city travel itineraries.</strong></p>
 
-A Go-based REST API for the AI Trip Planning Engine graduation project, featuring advanced AI integration, robust database relationships, and strict data validation.
+  ![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=for-the-badge&logo=go)
+  ![Gin Framework](https://img.shields.io/badge/Gin-Web_Framework-00ADD8?style=for-the-badge)
+  ![SQLite](https://img.shields.io/badge/SQLite-Database-003B57?style=for-the-badge&logo=sqlite)
+  ![Gemini AI](https://img.shields.io/badge/Google_Gemini-AI_Engine-4285F4?style=for-the-badge)
+</div>
 
-## Tech Stack
+---
 
-- **Go 1.21+** with **Gin** web framework
-- **SQLite** with **GORM** ORM (Configured for safe concurrent writes)
-- **JWT** authentication (access + refresh tokens)
-- **Google Gemini AI** integration (WAYNX API for trip planning & chat)
+## ✨ Core Features
 
-## Key Architecture & Features
+* 🧠 **Autonomous AI Planning:** Leverages **Google Gemini 2.5 Flash** to autonomously construct rich, day-by-day itineraries based on user preferences (budget, age group, interests, companions).
+* 🛡️ **Bulletproof Security:** JWT-based authentication with refresh token rotation. Passwords are mathematically secured using **bcrypt (Cost 12)** to thwart brute-force attacks.
+* 📦 **Robust Relational Integrity:** Utilizes GORM with strict, database-level `OnDelete:CASCADE` constraints. Hard-deleting a trip instantly and cleanly wipes thousands of associated destinations, days, and activities without leaving orphans.
+* 🛡️ **Leak-Proof Architecture:** All internal SQL and GORM errors are rigorously scrubbed at the service layer before reaching the API handlers. Clients only ever see safe, generic HTTP errors.
+* 🤖 **AI Output Sanitization:** Employs a custom Markdown-stripper pipeline to robustly parse AI-generated JSON, preventing app crashes even when Gemini hallucinates markdown formatting.
 
-- **Robust Database Integrity:** Uses strict transaction blocks and database-level `OnDelete:CASCADE` constraints to ensure there is never any orphaned or ghost data. Uses hard deletes to save space.
-- **AI JSON Sanitization:** Automatically strips markdown and cleanly parses Google Gemini responses even when the AI hallucinates formatting.
-- **Security:** Hardened bcrypt password hashing (cost 12), secure JWT endpoints, and sanitized internal SQL errors so internal schemas are never leaked to the client.
-- **Advanced Entities:** Supports Trip Collaboration, Budget Tracking, Place Reviews, and User Roles.
+---
 
-## Quick Start
+## 🏗️ Advanced Database Schema
 
-### 1. Prerequisites
-- Go 1.21+
-- A valid Google Gemini API key
+The backend is built around a highly normalized, deeply hierarchical data model.
 
-### 2. Setup
+### Trip Hierarchy Data Model
+When a user requests a trip, the AI's JSON output is transformed into four distinct database tables within a **single ACID transaction**:
+
+```mermaid
+graph TD
+    User([User]) -->|Has Many| Trip([Trip])
+    Trip -->|Has Many| TripDest([TripDestination])
+    TripDest -->|Has Many| TripDay([TripDay])
+    TripDay -->|Has Many| TripAct([TripActivity])
+```
+
+### Feature Expansion Tables
+To support a massive, community-driven travel app, the database includes:
+* 🤝 **`trip_members`**: A specialized junction table granting View/Edit permissions to multiple users collaborating on a single trip.
+* 💰 **`trip_expenses`**: A dedicated table tracking itemized financial transactions (Amount, Currency, Category) tied to specific itineraries.
+* ⭐ **`place_reviews`**: A community module allowing users to leave 1-5 star ratings and written reviews on individual locations.
+* 👑 **`users.role`**: Role-Based Access Control (RBAC) foundation, distinguishing standard users from system administrators.
+
+---
+
+## 🚀 Quick Start Guide
+
+### Prerequisites
+* Go 1.21 or higher installed.
+* A valid **Google Gemini API Key**.
+
+### Installation
 
 ```bash
-# Clone and enter backend directory
+# 1. Clone the repository
+git clone https://github.com/Waynx-Project-Graduation/backend.git
 cd backend
 
-# Copy and edit environment variables
+# 2. Configure Environment
 cp .env.example .env
-# Edit .env with your settings (database will be automatically created via SQLite)
+# Open .env and insert your GEMINI_API_KEY and WAYNX_BASE_URL
 
-# Install dependencies
+# 3. Download Dependencies
 go mod tidy
 
-# Run database migrations + seed sample data
+# 4. Run the automated seeder (populates DB with starter places)
 go run cmd/seed/main.go
 
-# Start the server
+# 5. Launch the server!
 go run cmd/server/main.go
 ```
+*The server will boot up and listen on `http://localhost:8080`.*
 
-## API Endpoints
+---
 
-Server runs on `http://localhost:8080`
+## 📡 API Reference
 
-### Auth (Public)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Register new user |
-| POST | `/api/auth/login` | Login |
-| POST | `/api/auth/google` | Google OAuth |
-| POST | `/api/auth/forgot-password` | Request password reset |
-| POST | `/api/auth/reset-password` | Reset password with token |
-| POST | `/api/auth/refresh` | Refresh token (no auth required) |
+### 🔐 Authentication
+* `POST /api/auth/register` — Create a new account.
+* `POST /api/auth/login` — Authenticate and receive JWTs.
+* `POST /api/auth/google` — OAuth2 integration with Google.
+* `POST /api/auth/refresh` — Issue a new access token using a valid refresh token.
 
-### Users (Protected 🔒)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/auth/me` | Get current user |
-| PUT | `/api/users/profile` | Update profile (name, city, avatar) |
-| PUT | `/api/users/preferences` | Update travel preferences |
-| PUT | `/api/users/password` | Change password |
-| GET | `/api/users/stats` | Get profile statistics |
-| GET | `/api/users/saved-places` | List saved/bookmarked places |
+### 👤 User Management (Protected)
+* `GET /api/auth/me` — Fetch the authenticated profile.
+* `PUT /api/users/profile` — Update user metadata (avatar, name, city).
+* `PUT /api/users/preferences` — Set global travel preferences (budget, interests) to auto-fill future AI prompts.
 
-### Trips (Protected 🔒)
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/trips` | Create trip (AI dynamically generates itinerary inside a DB transaction) |
-| GET | `/api/trips` | List my trips |
-| GET | `/api/trips/:id` | Get trip with destinations → days → activities |
-| PUT | `/api/trips/:id` | Update trip metadata |
-| DELETE | `/api/trips/:id` | Hard delete trip (cascades to all dependencies instantly) |
-| POST | `/api/trips/:id/regenerate` | Wipe itinerary and re-generate from AI |
+### ✈️ AI Trip Generation (Protected)
+* `POST /api/trips` — **(Core Engine)** Generates a full trip via Gemini based on preferences.
+* `POST /api/trips/:id/regenerate` — Wipes the current itinerary and prompts the AI to rebuild it from scratch.
+* `GET /api/trips/:id` — Fetches the entire 4-layer trip hierarchy in a single JSON payload.
+* `DELETE /api/trips/:id` — Executes a cascading hard-delete across the database.
 
-### Places & Chat
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/places` | List places (supports advanced search and filtering) |
-| GET | `/api/places/:id` | Get place details |
-| POST | `/api/places/:id/save` | Save place to favorites |
-| POST | `/api/chat` | Send message to WAYNX AI Assistant |
+### 🏛️ Places & Bookmarks
+* `GET /api/places` — Advanced querying engine supporting filters by `budget`, `season`, `crowd_level`, and `category`.
+* `POST /api/places/:id/save` — Bookmark a place to the user's wishlist.
 
-## Advanced Database Schema
+### 💬 Ask WAYNX (Protected)
+* `POST /api/chat` — Open a direct, conversational websocket/HTTP thread with the WAYNX AI Assistant to ask specific questions about locations or itineraries.
 
-The database utilizes highly relational and normalized tables.
+---
 
-### The Trip Hierarchy
-When the AI generates a trip, it creates records across four distinct tables wrapped in a single transaction:
-```
-trips
-  └── trip_destinations (e.g. Cairo 3 days, Luxor 2 days)
-        └── trip_days (Day 1, Day 2)
-              └── trip_activities (Pyramids 4h, Museum 3h)
-```
+## 🧠 Behind the Scenes: The AI Pipeline
 
-### Advanced Features & Tables
-- **Trip Members (`trip_members`)**: A junction table that allows many-to-many collaboration on trips. Users can be assigned roles (e.g. owner, editor).
-- **Trip Expenses (`trip_expenses`)**: Dedicated table for tracking individual expenses per trip (amount, currency, category).
-- **Place Reviews (`place_reviews`)**: A junction table allowing users to rate (1-5) and comment on places.
-- **User Roles (`users.role`)**: Role-based access control column serving as the foundation for an Admin Panel.
-
-## Trip Creation — Request Payload
-
-Trips use the same `preferences` JSON object as the user profile. The AI picks destinations automatically and strictly validates inputs.
-
-**Request:** `POST /api/trips`
-```json
-{
-  "start_date": "2026-05-01",
-  "end_date": "2026-05-07",
-  "travelers_count": 2,
-  "preferences": {
-    "interests": ["history", "adventure"],
-    "travel_companion": "couple",
-    "budget": "medium",
-    "age_group": "adult",
-    "crowd_preference": "quiet",
-    "season": "winter"
-  }
-}
-```
-
-## Project Structure
-
-```
-backend/
-├── cmd/
-│   ├── server/main.go           # App entry point
-│   └── seed/main.go             # Database seeder
-├── internal/
-│   ├── database/                # SQLite connection + safe AutoMigrate
-│   ├── handlers/                # HTTP route handlers (sanitized errors)
-│   ├── models/                  # GORM models (User, Trip, Review, Expense, Member)
-│   ├── repository/              # SQL queries and DB Transaction wrappers
-│   ├── services/                # Business logic + Gemini AI Markdown Sanitization
-│   └── utils/                   # JWT generation, response helpers
-├── .env.example
-├── go.mod
-└── go.sum
-```
+1. **Prompt Engineering:** When a user requests a trip, the backend translates their JSON preferences into a massive, highly-constrained natural language prompt.
+2. **Schema Enforcement:** The AI is instructed to return data matching a strict Go struct schema.
+3. **Sanitization:** The raw string is captured, aggressively stripped of markdown wrappers (` ```json `), and passed to the standard library `json.Unmarshal`.
+4. **Transactional Insert:** If parsing succeeds, GORM opens an SQLite transaction. It inserts the `Trip`, iterates over `Destinations`, iterates over `Days`, and iterates over `Activities`. 
+5. **Rollback Safety:** If any single insert fails (e.g., due to a constraint violation), the *entire* trip is rolled back instantly, ensuring the database is never polluted with partial data.
