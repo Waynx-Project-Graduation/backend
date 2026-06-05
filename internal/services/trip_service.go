@@ -13,13 +13,17 @@ import (
 	"golang.org/x/text/language"
 )
 
+type TripAIProvider interface {
+	GetRecommendation(req RecommendRequest) (*RecommendResponse, error)
+}
+
 type TripService struct {
 	tripRepo  *repository.TripRepository
 	placeRepo *repository.PlaceRepository
-	aiClient  *AIClient
+	aiClient  TripAIProvider
 }
 
-func NewTripService(tripRepo *repository.TripRepository, placeRepo *repository.PlaceRepository, aiClient *AIClient) *TripService {
+func NewTripService(tripRepo *repository.TripRepository, placeRepo *repository.PlaceRepository, aiClient TripAIProvider) *TripService {
 	return &TripService{
 		tripRepo:  tripRepo,
 		placeRepo: placeRepo,
