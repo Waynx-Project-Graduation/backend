@@ -28,6 +28,10 @@ func (r *PlaceRepository) FindByID(id uint) (*models.Place, error) {
 	return &place, nil
 }
 
+func (r *PlaceRepository) UpdateThumbnail(id uint, url string) error {
+	return r.db.Model(&models.Place{}).Where("id = ?", id).Update("thumbnail_url", url).Error
+}
+
 // PlaceFilter holds all the advanced filter parameters the UI supports
 type PlaceFilter struct {
 	Cities      []string // multi-city filter (Cairo, Luxor, etc.)

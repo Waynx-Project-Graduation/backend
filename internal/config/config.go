@@ -25,6 +25,7 @@ type Config struct {
 
 	GoogleClientID     string
 	GoogleClientSecret string
+	CloudinaryURL      string
 }
 
 func Load() *Config {
@@ -48,6 +49,7 @@ func Load() *Config {
 
 		GoogleClientID:     getEnv("GOOGLE_CLIENT_ID", ""),
 		GoogleClientSecret: getEnv("GOOGLE_CLIENT_SECRET", ""),
+		CloudinaryURL:      getEnv("CLOUDINARY_URL", ""),
 	}
 }
 

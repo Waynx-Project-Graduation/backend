@@ -22,7 +22,8 @@ func main() {
 	csvPath := "databaseFiles/kem_places (1).csv"
 	file, err := os.Open(csvPath)
 	if err != nil {
-		log.Fatalf("Failed to open CSV file %s: %v", csvPath, err)
+		log.Printf("⚠️  Failed to open CSV file %s: %v. Skipping seeding.", csvPath, err)
+		return
 	}
 	defer file.Close()
 

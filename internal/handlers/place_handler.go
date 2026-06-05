@@ -13,12 +13,14 @@ import (
 type PlaceHandler struct {
 	placeService      *services.PlaceService
 	savedPlaceService *services.SavedPlaceService
+	cloudinaryService *services.CloudinaryService
 }
 
-func NewPlaceHandler(placeService *services.PlaceService, savedPlaceService *services.SavedPlaceService) *PlaceHandler {
+func NewPlaceHandler(placeService *services.PlaceService, savedPlaceService *services.SavedPlaceService, cloudinaryService *services.CloudinaryService) *PlaceHandler {
 	return &PlaceHandler{
 		placeService:      placeService,
 		savedPlaceService: savedPlaceService,
+		cloudinaryService: cloudinaryService,
 	}
 }
 
@@ -193,4 +195,43 @@ func (h *PlaceHandler) UnsavePlace(c *gin.Context) {
 	}
 
 	utils.Success(c, gin.H{"message": "place unsaved successfully"})
+}
+
+// POST /api/places/:id/photo — Upload a place photo
+func (h *PlaceHandler) UploadPlacePhoto(c *gin.Context) {
+	placeID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		utils.BadRequest(c, "invalid place ID")
+		return
+	}
+
+	file, header, err := c.Request.FormFile("photo")
+	if err != nil {
+		utils.BadRequest(c, "photo file is required")
+		return
+	}
+	defer file.Close()
+
+	if header.Size > 5*1024*1024 { // 5MB limit
+		utils.BadRequest(c, "file size exceeds 5MB limit")
+		return
+	}
+
+	// Upload to Cloudinary
+	url, err := h.cloudinaryService.UploadImage(c.Request.Context(), file, "trip-planner/places")
+	if err != nil {
+		utils.InternalError(c, "failed to upload image to Cloudinary")
+		return
+	}
+
+	// Update Database
+	if err := h.placeService.UpdateThumbnail(uint(placeID), url); err != nil {
+		utils.InternalError(c, "failed to update place photo in database")
+		return
+	}
+
+	utils.Success(c, gin.H{
+		"message":       "place photo uploaded successfully",
+		"thumbnail_url": url,
+	})
 }

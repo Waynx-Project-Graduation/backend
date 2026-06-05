@@ -45,12 +45,13 @@ func main() {
 	tripService := services.NewTripService(tripRepo, placeRepo, aiClient)
 	chatService := services.NewChatService(chatRepo, aiClient)
 	savedPlaceService := services.NewSavedPlaceService(savedPlaceRepo, placeRepo)
+	cloudinaryService := services.NewCloudinaryService(cfg.CloudinaryURL)
 
 	// ── Handlers ──────────────────────────────────────────────────────
 	authHandler := handlers.NewAuthHandler(authService)
-	userHandler := handlers.NewUserHandler(userService, authService, savedPlaceService)
+	userHandler := handlers.NewUserHandler(userService, authService, savedPlaceService, cloudinaryService)
 	tripHandler := handlers.NewTripHandler(tripService)
-	placeHandler := handlers.NewPlaceHandler(placeService, savedPlaceService)
+	placeHandler := handlers.NewPlaceHandler(placeService, savedPlaceService, cloudinaryService)
 	chatHandler := handlers.NewChatHandler(chatService)
 
 	// ── Router Setup ──────────────────────────────────────────────────
@@ -112,6 +113,7 @@ func main() {
 			places.GET("/categories", placeHandler.ListCategories)
 			places.GET("/trending", placeHandler.TrendingSearches)
 			places.GET("/:id", placeHandler.GetPlace)
+			places.POST("/:id/photo", placeHandler.UploadPlacePhoto) // Optionally protected
 		}
 
 		// ── Place Routes (Protected — Save/Unsave) ───────────

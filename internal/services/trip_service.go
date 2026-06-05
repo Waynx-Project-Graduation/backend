@@ -135,7 +135,7 @@ func (s *TripService) CreateTrip(userID uuid.UUID, input CreateTripInput) (*mode
 
 // saveItinerary persists the AI plan as Destinations → Days → Activities
 func (s *TripService) saveItinerary(tripID uuid.UUID, startDate time.Time, aiResp *RecommendResponse) error {
-	if aiResp.Plan.Destinations == nil || len(aiResp.Plan.Destinations) == 0 {
+	if len(aiResp.Plan.Destinations) == 0 {
 		return errors.New("AI returned an empty plan")
 	}
 

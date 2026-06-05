@@ -13,13 +13,15 @@ type UserHandler struct {
 	userService       *services.UserService
 	authService       *services.AuthService
 	savedPlaceService *services.SavedPlaceService
+	cloudinaryService *services.CloudinaryService
 }
 
-func NewUserHandler(userService *services.UserService, authService *services.AuthService, savedPlaceService *services.SavedPlaceService) *UserHandler {
+func NewUserHandler(userService *services.UserService, authService *services.AuthService, savedPlaceService *services.SavedPlaceService, cloudinaryService *services.CloudinaryService) *UserHandler {
 	return &UserHandler{
 		userService:       userService,
 		authService:       authService,
 		savedPlaceService: savedPlaceService,
+		cloudinaryService: cloudinaryService,
 	}
 }
 
@@ -115,20 +117,31 @@ func (h *UserHandler) GetSavedPlaces(c *gin.Context) {
 	})
 }
 
-// PUT /api/users/avatar — Update user avatar URL
+// PUT /api/users/avatar — Update user avatar URL via file upload
 func (h *UserHandler) UpdateAvatar(c *gin.Context) {
 	userID := getUserID(c)
 
-	var input struct {
-		AvatarURL string `json:"avatar_url" binding:"required"`
+	file, header, err := c.Request.FormFile("avatar")
+	if err != nil {
+		utils.BadRequest(c, "avatar file is required")
+		return
 	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		utils.BadRequest(c, err.Error())
+	defer file.Close()
+
+	if header.Size > 5*1024*1024 { // 5MB limit
+		utils.BadRequest(c, "file size exceeds 5MB limit")
+		return
+	}
+
+	// Upload to Cloudinary
+	url, err := h.cloudinaryService.UploadImage(c.Request.Context(), file, "trip-planner/avatars")
+	if err != nil {
+		utils.InternalError(c, "failed to upload image to Cloudinary")
 		return
 	}
 
 	profileInput := services.UpdateProfileInput{
-		AvatarURL: input.AvatarURL,
+		AvatarURL: url,
 	}
 
 	user, err := h.userService.UpdateProfile(userID, profileInput)
