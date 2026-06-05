@@ -24,7 +24,18 @@ func NewPlaceHandler(placeService *services.PlaceService, savedPlaceService *ser
 	}
 }
 
-// GET /api/places — List places with advanced filtering
+// ListPlaces godoc
+// @Summary      List places
+// @Description  Get a paginated list of places with optional filters
+// @Tags         places
+// @Accept       json
+// @Produce      json
+// @Param        page query int false "Page number"
+// @Param        per_page query int false "Items per page"
+// @Param        city query string false "Filter by city"
+// @Param        category query string false "Filter by category"
+// @Success      200  {object}  map[string]interface{}
+// @Router       /places [get]
 func (h *PlaceHandler) ListPlaces(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	perPage, _ := strconv.Atoi(c.DefaultQuery("per_page", "10"))
@@ -86,7 +97,15 @@ func (h *PlaceHandler) ListPlaces(c *gin.Context) {
 	})
 }
 
-// GET /api/places/:id — Get place details
+// GetPlace godoc
+// @Summary      Get place
+// @Description  Get details of a specific place by ID
+// @Tags         places
+// @Accept       json
+// @Produce      json
+// @Param        id path int true "Place ID"
+// @Success      200  {object}  models.Place
+// @Router       /places/{id} [get]
 func (h *PlaceHandler) GetPlace(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -103,7 +122,14 @@ func (h *PlaceHandler) GetPlace(c *gin.Context) {
 	utils.Success(c, place)
 }
 
-// GET /api/places/popular — Popular places
+// PopularPlaces godoc
+// @Summary      Popular places
+// @Description  Get a list of popular places
+// @Tags         places
+// @Accept       json
+// @Produce      json
+// @Success      200  {array}   models.Place
+// @Router       /places/popular [get]
 func (h *PlaceHandler) PopularPlaces(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 

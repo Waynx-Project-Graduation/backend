@@ -14,7 +14,16 @@ func NewAuthHandler(authService *services.AuthService) *AuthHandler {
 	return &AuthHandler{authService: authService}
 }
 
-// POST /api/auth/register
+// Register godoc
+// @Summary      Register a new user
+// @Description  Creates a new user account and returns JWT tokens
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        input body services.RegisterInput true "Registration info"
+// @Success      201  {object}  services.AuthResponse
+// @Failure      400  {object}  utils.Response
+// @Router       /auth/register [post]
 func (h *AuthHandler) Register(c *gin.Context) {
 	var input services.RegisterInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -31,7 +40,17 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	utils.Created(c, resp)
 }
 
-// POST /api/auth/login
+// Login godoc
+// @Summary      Login user
+// @Description  Authenticates a user and returns JWT tokens
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        input body services.LoginInput true "Login info"
+// @Success      200  {object}  services.AuthResponse
+// @Failure      400  {object}  utils.Response
+// @Failure      401  {object}  utils.Response
+// @Router       /auth/login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
 	var input services.LoginInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -48,7 +67,17 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	utils.Success(c, resp)
 }
 
-// POST /api/auth/refresh
+// RefreshToken godoc
+// @Summary      Refresh tokens
+// @Description  Exchanges a refresh token for a new pair of access and refresh tokens
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body body object{refresh_token=string} true "Refresh Token"
+// @Success      200  {object}  utils.TokenPair
+// @Failure      400  {object}  utils.Response
+// @Failure      401  {object}  utils.Response
+// @Router       /auth/refresh [post]
 func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	var body struct {
 		RefreshToken string `json:"refresh_token" binding:"required"`
@@ -67,7 +96,17 @@ func (h *AuthHandler) RefreshToken(c *gin.Context) {
 	utils.Success(c, tokens)
 }
 
-// GET /api/auth/me
+// Me godoc
+// @Summary      Get current user profile
+// @Description  Returns the profile of the currently authenticated user
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  services.UserResponse
+// @Failure      401  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Router       /auth/me [get]
 func (h *AuthHandler) Me(c *gin.Context) {
 	userID := getUserID(c)
 

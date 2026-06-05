@@ -1,0 +1,677 @@
+basePath: /api
+definitions:
+  github_com_kemit_trip-planner_internal_models.ChatMessage:
+    properties:
+      content:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      is_verified:
+        type: boolean
+      related_places:
+        description: JSON-encoded string slice
+        items:
+          type: string
+        type: array
+      role:
+        description: '"user" or "assistant"'
+        type: string
+      session_id:
+        type: string
+    type: object
+  github_com_kemit_trip-planner_internal_models.ChatSession:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: string
+      messages:
+        description: Relations
+        items:
+          $ref: '#/definitions/github_com_kemit_trip-planner_internal_models.ChatMessage'
+        type: array
+      title:
+        type: string
+      updated_at:
+        type: string
+      user_id:
+        type: string
+    type: object
+  github_com_kemit_trip-planner_internal_models.Place:
+    properties:
+      best_season:
+        description: winter, summer, spring, autumn, any
+        type: string
+      budget_level:
+        description: low, medium, high
+        type: string
+      category:
+        type: string
+      city:
+        type: string
+      created_at:
+        type: string
+      crowd_level:
+        description: quiet, moderate, crowded
+        type: string
+      description:
+        type: string
+      duration_needed:
+        description: hours
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      rating:
+        type: number
+      saved_by:
+        items:
+          $ref: '#/definitions/github_com_kemit_trip-planner_internal_models.SavedPlace'
+        type: array
+      suitable_age:
+        description: 'comma-separated: kid,teen,adult,senior'
+        type: string
+      suitable_for:
+        description: 'comma-separated: family,couple,solo,friends'
+        type: string
+      thumbnail_url:
+        description: externally hosted image URL
+        type: string
+      trip_activities:
+        description: Relations
+        items:
+          $ref: '#/definitions/github_com_kemit_trip-planner_internal_models.TripActivity'
+        type: array
+    type: object
+  github_com_kemit_trip-planner_internal_models.Preferences:
+    properties:
+      age_group:
+        description: teen / adult / senior
+        type: string
+      budget:
+        description: low / medium / high
+        type: string
+      crowd_preference:
+        description: crowded / quiet / no_preference
+        type: string
+      interests:
+        description: '["history","adventure",…]'
+        items:
+          type: string
+        type: array
+      season:
+        description: winter / spring / summer / autumn
+        type: string
+      travel_companion:
+        description: solo / couple / family / friends
+        type: string
+    type: object
+  github_com_kemit_trip-planner_internal_models.SavedPlace:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      place:
+        allOf:
+        - $ref: '#/definitions/github_com_kemit_trip-planner_internal_models.Place'
+        description: Relations
+      place_id:
+        type: integer
+      user_id:
+        type: string
+    type: object
+  github_com_kemit_trip-planner_internal_models.Trip:
+    properties:
+      created_at:
+        type: string
+      destinations:
+        items:
+          $ref: '#/definitions/github_com_kemit_trip-planner_internal_models.TripDestination'
+        type: array
+      end_date:
+        type: string
+      id:
+        type: string
+      preferences:
+        allOf:
+        - $ref: '#/definitions/github_com_kemit_trip-planner_internal_models.Preferences'
+        description: same JSON shape as user preferences
+      start_date:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      travelers_count:
+        type: integer
+      updated_at:
+        type: string
+      user:
+        allOf:
+        - $ref: '#/definitions/github_com_kemit_trip-planner_internal_models.User'
+        description: Relations
+      user_id:
+        type: string
+    type: object
+  github_com_kemit_trip-planner_internal_models.TripActivity:
+    properties:
+      activity_name:
+        type: string
+      activity_type:
+        type: string
+      category:
+        type: string
+      description:
+        type: string
+      duration_hours:
+        type: integer
+      end_time:
+        type: string
+      estimated_cost:
+        type: number
+      id:
+        type: string
+      order_in_day:
+        type: integer
+      place:
+        allOf:
+        - $ref: '#/definitions/github_com_kemit_trip-planner_internal_models.Place'
+        description: Relations
+      place_id:
+        type: integer
+      rating:
+        type: number
+      start_time:
+        type: string
+      trip_day_id:
+        type: string
+    type: object
+  github_com_kemit_trip-planner_internal_models.TripDay:
+    properties:
+      activities:
+        description: Relations
+        items:
+          $ref: '#/definitions/github_com_kemit_trip-planner_internal_models.TripActivity'
+        type: array
+      date:
+        type: string
+      day_number:
+        type: integer
+      hours_used:
+        type: integer
+      id:
+        type: string
+      trip_destination_id:
+        type: string
+      trip_id:
+        type: string
+    type: object
+  github_com_kemit_trip-planner_internal_models.TripDestination:
+    properties:
+      category:
+        description: dominant category for this city
+        type: string
+      city:
+        type: string
+      days_allocated:
+        type: integer
+      id:
+        type: string
+      order_in_trip:
+        type: integer
+      trip_days:
+        description: Relations
+        items:
+          $ref: '#/definitions/github_com_kemit_trip-planner_internal_models.TripDay'
+        type: array
+      trip_id:
+        type: string
+    type: object
+  github_com_kemit_trip-planner_internal_models.User:
+    properties:
+      auth_provider:
+        type: string
+      avatar_url:
+        type: string
+      badge_type:
+        type: string
+      chat_sessions:
+        items:
+          $ref: '#/definitions/github_com_kemit_trip-planner_internal_models.ChatSession'
+        type: array
+      city:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      explorer_points:
+        type: integer
+      full_name:
+        type: string
+      id:
+        type: string
+      last_login:
+        type: string
+      preferences:
+        $ref: '#/definitions/github_com_kemit_trip-planner_internal_models.Preferences'
+      saved_places:
+        items:
+          $ref: '#/definitions/github_com_kemit_trip-planner_internal_models.SavedPlace'
+        type: array
+      trips:
+        description: Relations
+        items:
+          $ref: '#/definitions/github_com_kemit_trip-planner_internal_models.Trip'
+        type: array
+      updated_at:
+        type: string
+    type: object
+  github_com_kemit_trip-planner_internal_services.AuthResponse:
+    properties:
+      tokens:
+        $ref: '#/definitions/github_com_kemit_trip-planner_internal_utils.TokenPair'
+      user:
+        $ref: '#/definitions/github_com_kemit_trip-planner_internal_services.UserResponse'
+    type: object
+  github_com_kemit_trip-planner_internal_services.CreateTripInput:
+    properties:
+      end_date:
+        description: YYYY-MM-DD
+        type: string
+      preferences:
+        $ref: '#/definitions/github_com_kemit_trip-planner_internal_models.Preferences'
+      start_date:
+        description: YYYY-MM-DD
+        type: string
+      travelers_count:
+        minimum: 1
+        type: integer
+    required:
+    - end_date
+    - preferences
+    - start_date
+    - travelers_count
+    type: object
+  github_com_kemit_trip-planner_internal_services.LoginInput:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  github_com_kemit_trip-planner_internal_services.RegisterInput:
+    properties:
+      email:
+        type: string
+      full_name:
+        maxLength: 100
+        minLength: 2
+        type: string
+      password:
+        maxLength: 100
+        minLength: 6
+        type: string
+    required:
+    - email
+    - full_name
+    - password
+    type: object
+  github_com_kemit_trip-planner_internal_services.UserResponse:
+    properties:
+      auth_provider:
+        type: string
+      avatar_url:
+        type: string
+      badge_type:
+        type: string
+      city:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      explorer_points:
+        type: integer
+      full_name:
+        type: string
+      id:
+        type: string
+      last_login:
+        type: string
+      preferences:
+        $ref: '#/definitions/github_com_kemit_trip-planner_internal_models.Preferences'
+    type: object
+  github_com_kemit_trip-planner_internal_utils.ErrorBody:
+    properties:
+      code:
+        type: string
+      details:
+        items:
+          $ref: '#/definitions/github_com_kemit_trip-planner_internal_utils.FieldError'
+        type: array
+      message:
+        type: string
+    type: object
+  github_com_kemit_trip-planner_internal_utils.FieldError:
+    properties:
+      field:
+        type: string
+      message:
+        type: string
+    type: object
+  github_com_kemit_trip-planner_internal_utils.Meta:
+    properties:
+      page:
+        type: integer
+      per_page:
+        type: integer
+      total:
+        type: integer
+    type: object
+  github_com_kemit_trip-planner_internal_utils.Response:
+    properties:
+      data: {}
+      error:
+        $ref: '#/definitions/github_com_kemit_trip-planner_internal_utils.ErrorBody'
+      meta:
+        $ref: '#/definitions/github_com_kemit_trip-planner_internal_utils.Meta'
+      success:
+        type: boolean
+    type: object
+  github_com_kemit_trip-planner_internal_utils.TokenPair:
+    properties:
+      access_token:
+        type: string
+      expires_at:
+        type: integer
+      refresh_token:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is the backend API for the Kemit Trip Planner application.
+  title: Kemit Trip Planner API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns JWT tokens
+      parameters:
+      - description: Login info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kemit_trip-planner_internal_services.LoginInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kemit_trip-planner_internal_services.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kemit_trip-planner_internal_utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_kemit_trip-planner_internal_utils.Response'
+      summary: Login user
+      tags:
+      - auth
+  /auth/me:
+    get:
+      consumes:
+      - application/json
+      description: Returns the profile of the currently authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kemit_trip-planner_internal_services.UserResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_kemit_trip-planner_internal_utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_kemit_trip-planner_internal_utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Get current user profile
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Exchanges a refresh token for a new pair of access and refresh
+        tokens
+      parameters:
+      - description: Refresh Token
+        in: body
+        name: body
+        required: true
+        schema:
+          properties:
+            refresh_token:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kemit_trip-planner_internal_utils.TokenPair'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kemit_trip-planner_internal_utils.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_kemit_trip-planner_internal_utils.Response'
+      summary: Refresh tokens
+      tags:
+      - auth
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user account and returns JWT tokens
+      parameters:
+      - description: Registration info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kemit_trip-planner_internal_services.RegisterInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kemit_trip-planner_internal_services.AuthResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kemit_trip-planner_internal_utils.Response'
+      summary: Register a new user
+      tags:
+      - auth
+  /places:
+    get:
+      consumes:
+      - application/json
+      description: Get a paginated list of places with optional filters
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: per_page
+        type: integer
+      - description: Filter by city
+        in: query
+        name: city
+        type: string
+      - description: Filter by category
+        in: query
+        name: category
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List places
+      tags:
+      - places
+  /places/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get details of a specific place by ID
+      parameters:
+      - description: Place ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kemit_trip-planner_internal_models.Place'
+      summary: Get place
+      tags:
+      - places
+  /places/popular:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of popular places
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kemit_trip-planner_internal_models.Place'
+            type: array
+      summary: Popular places
+      tags:
+      - places
+  /trips:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of trips for the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_kemit_trip-planner_internal_models.Trip'
+            type: array
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_kemit_trip-planner_internal_utils.Response'
+      security:
+      - BearerAuth: []
+      summary: List user trips
+      tags:
+      - trips
+    post:
+      consumes:
+      - application/json
+      description: Generates an AI-powered trip itinerary based on user input
+      parameters:
+      - description: Trip creation parameters
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_kemit_trip-planner_internal_services.CreateTripInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_kemit_trip-planner_internal_models.Trip'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_kemit_trip-planner_internal_utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Create a new trip
+      tags:
+      - trips
+  /trips/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get full details of a specific trip, including days and activities
+      parameters:
+      - description: Trip ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_kemit_trip-planner_internal_models.Trip'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_kemit_trip-planner_internal_utils.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_kemit_trip-planner_internal_utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Get trip details
+      tags:
+      - trips
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

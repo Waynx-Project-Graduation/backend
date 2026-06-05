@@ -1,0 +1,1029 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is the backend API for the Kemit Trip Planner application.",
+        "title": "Kemit Trip Planner API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api",
+    "paths": {
+        "/auth/login": {
+            "post": {
+                "description": "Authenticates a user and returns JWT tokens",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Login user",
+                "parameters": [
+                    {
+                        "description": "Login info",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_services.LoginInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_services.AuthResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_utils.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/me": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns the profile of the currently authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Get current user profile",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_services.UserResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/refresh": {
+            "post": {
+                "description": "Exchanges a refresh token for a new pair of access and refresh tokens",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Refresh tokens",
+                "parameters": [
+                    {
+                        "description": "Refresh Token",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "properties": {
+                                "refresh_token": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_utils.TokenPair"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_utils.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/register": {
+            "post": {
+                "description": "Creates a new user account and returns JWT tokens",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Register a new user",
+                "parameters": [
+                    {
+                        "description": "Registration info",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_services.RegisterInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_services.AuthResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/places": {
+            "get": {
+                "description": "Get a paginated list of places with optional filters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "places"
+                ],
+                "summary": "List places",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page",
+                        "name": "per_page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by city",
+                        "name": "city",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by category",
+                        "name": "category",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/places/popular": {
+            "get": {
+                "description": "Get a list of popular places",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "places"
+                ],
+                "summary": "Popular places",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_kemit_trip-planner_internal_models.Place"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/places/{id}": {
+            "get": {
+                "description": "Get details of a specific place by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "places"
+                ],
+                "summary": "Get place",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Place ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_models.Place"
+                        }
+                    }
+                }
+            }
+        },
+        "/trips": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get a list of trips for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "trips"
+                ],
+                "summary": "List user trips",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_kemit_trip-planner_internal_models.Trip"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_utils.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Generates an AI-powered trip itinerary based on user input",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "trips"
+                ],
+                "summary": "Create a new trip",
+                "parameters": [
+                    {
+                        "description": "Trip creation parameters",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_services.CreateTripInput"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_models.Trip"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_utils.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/trips/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get full details of a specific trip, including days and activities",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "trips"
+                ],
+                "summary": "Get trip details",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Trip ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_models.Trip"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_utils.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_utils.Response"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "github_com_kemit_trip-planner_internal_models.ChatMessage": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_verified": {
+                    "type": "boolean"
+                },
+                "related_places": {
+                    "description": "JSON-encoded string slice",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "role": {
+                    "description": "\"user\" or \"assistant\"",
+                    "type": "string"
+                },
+                "session_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_kemit_trip-planner_internal_models.ChatSession": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "messages": {
+                    "description": "Relations",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_kemit_trip-planner_internal_models.ChatMessage"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_kemit_trip-planner_internal_models.Place": {
+            "type": "object",
+            "properties": {
+                "best_season": {
+                    "description": "winter, summer, spring, autumn, any",
+                    "type": "string"
+                },
+                "budget_level": {
+                    "description": "low, medium, high",
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "crowd_level": {
+                    "description": "quiet, moderate, crowded",
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "duration_needed": {
+                    "description": "hours",
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "rating": {
+                    "type": "number"
+                },
+                "saved_by": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_kemit_trip-planner_internal_models.SavedPlace"
+                    }
+                },
+                "suitable_age": {
+                    "description": "comma-separated: kid,teen,adult,senior",
+                    "type": "string"
+                },
+                "suitable_for": {
+                    "description": "comma-separated: family,couple,solo,friends",
+                    "type": "string"
+                },
+                "thumbnail_url": {
+                    "description": "externally hosted image URL",
+                    "type": "string"
+                },
+                "trip_activities": {
+                    "description": "Relations",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_kemit_trip-planner_internal_models.TripActivity"
+                    }
+                }
+            }
+        },
+        "github_com_kemit_trip-planner_internal_models.Preferences": {
+            "type": "object",
+            "properties": {
+                "age_group": {
+                    "description": "teen / adult / senior",
+                    "type": "string"
+                },
+                "budget": {
+                    "description": "low / medium / high",
+                    "type": "string"
+                },
+                "crowd_preference": {
+                    "description": "crowded / quiet / no_preference",
+                    "type": "string"
+                },
+                "interests": {
+                    "description": "[\"history\",\"adventure\",…]",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "season": {
+                    "description": "winter / spring / summer / autumn",
+                    "type": "string"
+                },
+                "travel_companion": {
+                    "description": "solo / couple / family / friends",
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_kemit_trip-planner_internal_models.SavedPlace": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "place": {
+                    "description": "Relations",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_models.Place"
+                        }
+                    ]
+                },
+                "place_id": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_kemit_trip-planner_internal_models.Trip": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "destinations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_kemit_trip-planner_internal_models.TripDestination"
+                    }
+                },
+                "end_date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "preferences": {
+                    "description": "same JSON shape as user preferences",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_models.Preferences"
+                        }
+                    ]
+                },
+                "start_date": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "travelers_count": {
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "user": {
+                    "description": "Relations",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_models.User"
+                        }
+                    ]
+                },
+                "user_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_kemit_trip-planner_internal_models.TripActivity": {
+            "type": "object",
+            "properties": {
+                "activity_name": {
+                    "type": "string"
+                },
+                "activity_type": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "duration_hours": {
+                    "type": "integer"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "estimated_cost": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "order_in_day": {
+                    "type": "integer"
+                },
+                "place": {
+                    "description": "Relations",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_kemit_trip-planner_internal_models.Place"
+                        }
+                    ]
+                },
+                "place_id": {
+                    "type": "integer"
+                },
+                "rating": {
+                    "type": "number"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "trip_day_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_kemit_trip-planner_internal_models.TripDay": {
+            "type": "object",
+            "properties": {
+                "activities": {
+                    "description": "Relations",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_kemit_trip-planner_internal_models.TripActivity"
+                    }
+                },
+                "date": {
+                    "type": "string"
+                },
+                "day_number": {
+                    "type": "integer"
+                },
+                "hours_used": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "trip_destination_id": {
+                    "type": "string"
+                },
+                "trip_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_kemit_trip-planner_internal_models.TripDestination": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "description": "dominant category for this city",
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "days_allocated": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "order_in_trip": {
+                    "type": "integer"
+                },
+                "trip_days": {
+                    "description": "Relations",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_kemit_trip-planner_internal_models.TripDay"
+                    }
+                },
+                "trip_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_kemit_trip-planner_internal_models.User": {
+            "type": "object",
+            "properties": {
+                "auth_provider": {
+                    "type": "string"
+                },
+                "avatar_url": {
+                    "type": "string"
+                },
+                "badge_type": {
+                    "type": "string"
+                },
+                "chat_sessions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_kemit_trip-planner_internal_models.ChatSession"
+                    }
+                },
+                "city": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "explorer_points": {
+                    "type": "integer"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "last_login": {
+                    "type": "string"
+                },
+                "preferences": {
+                    "$ref": "#/definitions/github_com_kemit_trip-planner_internal_models.Preferences"
+                },
+                "saved_places": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_kemit_trip-planner_internal_models.SavedPlace"
+                    }
+                },
+                "trips": {
+                    "description": "Relations",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_kemit_trip-planner_internal_models.Trip"
+                    }
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_kemit_trip-planner_internal_services.AuthResponse": {
+            "type": "object",
+            "properties": {
+                "tokens": {
+                    "$ref": "#/definitions/github_com_kemit_trip-planner_internal_utils.TokenPair"
+                },
+                "user": {
+                    "$ref": "#/definitions/github_com_kemit_trip-planner_internal_services.UserResponse"
+                }
+            }
+        },
+        "github_com_kemit_trip-planner_internal_services.CreateTripInput": {
+            "type": "object",
+            "required": [
+                "end_date",
+                "preferences",
+                "start_date",
+                "travelers_count"
+            ],
+            "properties": {
+                "end_date": {
+                    "description": "YYYY-MM-DD",
+                    "type": "string"
+                },
+                "preferences": {
+                    "$ref": "#/definitions/github_com_kemit_trip-planner_internal_models.Preferences"
+                },
+                "start_date": {
+                    "description": "YYYY-MM-DD",
+                    "type": "string"
+                },
+                "travelers_count": {
+                    "type": "integer",
+                    "minimum": 1
+                }
+            }
+        },
+        "github_com_kemit_trip-planner_internal_services.LoginInput": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_kemit_trip-planner_internal_services.RegisterInput": {
+            "type": "object",
+            "required": [
+                "email",
+                "full_name",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "full_name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 6
+                }
+            }
+        },
+        "github_com_kemit_trip-planner_internal_services.UserResponse": {
+            "type": "object",
+            "properties": {
+                "auth_provider": {
+                    "type": "string"
+                },
+                "avatar_url": {
+                    "type": "string"
+                },
+                "badge_type": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "explorer_points": {
+                    "type": "integer"
+                },
+                "full_name": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "last_login": {
+                    "type": "string"
+                },
+                "preferences": {
+                    "$ref": "#/definitions/github_com_kemit_trip-planner_internal_models.Preferences"
+                }
+            }
+        },
+        "github_com_kemit_trip-planner_internal_utils.ErrorBody": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "details": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_kemit_trip-planner_internal_utils.FieldError"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_kemit_trip-planner_internal_utils.FieldError": {
+            "type": "object",
+            "properties": {
+                "field": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_kemit_trip-planner_internal_utils.Meta": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "type": "integer"
+                },
+                "per_page": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_kemit_trip-planner_internal_utils.Response": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "error": {
+                    "$ref": "#/definitions/github_com_kemit_trip-planner_internal_utils.ErrorBody"
+                },
+                "meta": {
+                    "$ref": "#/definitions/github_com_kemit_trip-planner_internal_utils.Meta"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "github_com_kemit_trip-planner_internal_utils.TokenPair": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "expires_at": {
+                    "type": "integer"
+                },
+                "refresh_token": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

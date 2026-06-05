@@ -5,6 +5,11 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	
+	_ "github.com/kemit/trip-planner/docs"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+
 	"github.com/kemit/trip-planner/internal/config"
 	"github.com/kemit/trip-planner/internal/database"
 	"github.com/kemit/trip-planner/internal/handlers"
@@ -13,6 +18,15 @@ import (
 	"github.com/kemit/trip-planner/internal/services"
 	"github.com/kemit/trip-planner/internal/utils"
 )
+
+// @title           Kemit Trip Planner API
+// @version         1.0
+// @description     This is the backend API for the Kemit Trip Planner application.
+// @host            localhost:8080
+// @BasePath        /api
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 
 func main() {
 	// Load configuration
@@ -148,6 +162,9 @@ func main() {
 			chat.DELETE("/:id", chatHandler.DeleteSession)
 		}
 	}
+
+	// Swagger documentation route
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	// Start server
 	addr := ":" + cfg.Port

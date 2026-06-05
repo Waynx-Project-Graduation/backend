@@ -17,7 +17,17 @@ func NewTripHandler(tripService *services.TripService) *TripHandler {
 	return &TripHandler{tripService: tripService}
 }
 
-// POST /api/trips
+// CreateTrip godoc
+// @Summary      Create a new trip
+// @Description  Generates an AI-powered trip itinerary based on user input
+// @Tags         trips
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        input body services.CreateTripInput true "Trip creation parameters"
+// @Success      201  {object}  models.Trip
+// @Failure      400  {object}  utils.Response
+// @Router       /trips [post]
 func (h *TripHandler) CreateTrip(c *gin.Context) {
 	userID := getUserID(c)
 
@@ -40,7 +50,16 @@ func (h *TripHandler) CreateTrip(c *gin.Context) {
 	utils.Created(c, trip)
 }
 
-// GET /api/trips
+// ListTrips godoc
+// @Summary      List user trips
+// @Description  Get a list of trips for the authenticated user
+// @Tags         trips
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {array}   models.Trip
+// @Failure      401  {object}  utils.Response
+// @Router       /trips [get]
 func (h *TripHandler) ListTrips(c *gin.Context) {
 	userID := getUserID(c)
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -59,7 +78,18 @@ func (h *TripHandler) ListTrips(c *gin.Context) {
 	})
 }
 
-// GET /api/trips/:id
+// GetTrip godoc
+// @Summary      Get trip details
+// @Description  Get full details of a specific trip, including days and activities
+// @Tags         trips
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path int true "Trip ID"
+// @Success      200  {object}  models.Trip
+// @Failure      401  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Router       /trips/{id} [get]
 func (h *TripHandler) GetTrip(c *gin.Context) {
 	userID := getUserID(c)
 	tripID, err := uuid.Parse(c.Param("id"))
