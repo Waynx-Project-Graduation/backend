@@ -34,6 +34,9 @@ func Connect(cfg *config.Config) *gorm.DB {
 	sqlDB.Exec("PRAGMA journal_mode=WAL")
 	sqlDB.Exec("PRAGMA foreign_keys=ON")
 
+	// Limit concurrent writes to prevent "database is locked" crashes
+	sqlDB.SetMaxOpenConns(1)
+
 	log.Println("Database connected successfully (SQLite)")
 	return db
 }
@@ -50,6 +53,9 @@ func AutoMigrate(db *gorm.DB) {
 		&models.ChatSession{},
 		&models.ChatMessage{},
 		&models.SavedPlace{},
+		&models.PlaceReview{},
+		&models.TripExpense{},
+		&models.TripMember{},
 	)
 	if err != nil {
 		log.Fatalf("Failed to auto-migrate: %v", err)

@@ -51,7 +51,9 @@ func TestTripService_CreateTrip(t *testing.T) {
 		EndDate:        time.Now().AddDate(0, 0, 1).Format("2006-01-02"),
 		TravelersCount: 2,
 		Preferences: models.Preferences{
-			Interests: []string{"history"},
+			Interests:       []string{"history"},
+			TravelCompanion: "friends",
+			Budget:          "moderate",
 		},
 	}
 

@@ -108,7 +108,7 @@ func (s *UserService) ChangePassword(userID uuid.UUID, input ChangePasswordInput
 	}
 
 	// Hash new password
-	hash, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), 12)
 	if err != nil {
 		return errors.New("failed to hash password")
 	}

@@ -20,6 +20,7 @@ type ChatSession struct {
 	DeletedAt gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// Relations
+	User     User          `gorm:"foreignKey:UserID" json:"user,omitempty"`
 	Messages []ChatMessage `gorm:"foreignKey:SessionID;constraint:OnDelete:CASCADE" json:"messages,omitempty"`
 }
 
@@ -43,6 +44,9 @@ type ChatMessage struct {
 	IsVerified    bool        `gorm:"default:false" json:"is_verified"`
 	RelatedPlaces StringSlice `gorm:"type:text" json:"related_places"` // JSON-encoded string slice
 	CreatedAt     time.Time   `json:"created_at"`
+
+	// Relations
+	Session ChatSession `gorm:"foreignKey:SessionID" json:"session,omitempty"`
 }
 
 func (cm *ChatMessage) BeforeCreate(tx *gorm.DB) error {

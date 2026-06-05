@@ -20,11 +20,12 @@ type Trip struct {
 	Status         string         `gorm:"type:text;default:'draft';index" json:"status"`
 	CreatedAt      time.Time      `json:"created_at"`
 	UpdatedAt      time.Time      `json:"updated_at"`
-	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// Relations
 	User         User              `gorm:"foreignKey:UserID" json:"user,omitempty"`
-	Destinations []TripDestination `gorm:"foreignKey:TripID;constraint:OnDelete:CASCADE" json:"destinations,omitempty"`
+	Destinations []TripDestination `gorm:"foreignKey:TripID;constraint:OnDelete:CASCADE;" json:"destinations,omitempty"`
+	Expenses     []TripExpense     `gorm:"foreignKey:TripID;constraint:OnDelete:CASCADE;" json:"expenses,omitempty"`
+	Members      []TripMember      `gorm:"foreignKey:TripID;constraint:OnDelete:CASCADE;" json:"members,omitempty"`
 }
 
 func (t *Trip) BeforeCreate(tx *gorm.DB) error {
@@ -49,6 +50,7 @@ type TripDestination struct {
 	OrderInTrip   int       `gorm:"default:0" json:"order_in_trip"`
 
 	// Relations
+	Trip     Trip      `gorm:"foreignKey:TripID" json:"trip,omitempty"`
 	TripDays []TripDay `gorm:"foreignKey:TripDestinationID;constraint:OnDelete:CASCADE" json:"trip_days,omitempty"`
 }
 
@@ -73,7 +75,9 @@ type TripDay struct {
 	HoursUsed           int       `gorm:"default:0" json:"hours_used"`
 
 	// Relations
-	Activities []TripActivity `gorm:"foreignKey:TripDayID;constraint:OnDelete:CASCADE" json:"activities,omitempty"`
+	Trip            Trip            `gorm:"foreignKey:TripID" json:"trip,omitempty"`
+	TripDestination TripDestination `gorm:"foreignKey:TripDestinationID" json:"trip_destination,omitempty"`
+	Activities      []TripActivity  `gorm:"foreignKey:TripDayID;constraint:OnDelete:CASCADE" json:"activities,omitempty"`
 }
 
 func (td *TripDay) BeforeCreate(tx *gorm.DB) error {
@@ -104,7 +108,8 @@ type TripActivity struct {
 	ActivityType  string    `gorm:"type:text" json:"activity_type"`
 
 	// Relations
-	Place *Place `gorm:"foreignKey:PlaceID" json:"place,omitempty"`
+	TripDay TripDay `gorm:"foreignKey:TripDayID" json:"trip_day,omitempty"`
+	Place   *Place  `gorm:"foreignKey:PlaceID" json:"place,omitempty"`
 }
 
 func (ta *TripActivity) BeforeCreate(tx *gorm.DB) error {

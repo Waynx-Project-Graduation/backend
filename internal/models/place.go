@@ -23,8 +23,9 @@ type Place struct {
 	CreatedAt      time.Time `json:"created_at"`
 
 	// Relations
-	TripActivities []TripActivity `gorm:"foreignKey:PlaceID" json:"trip_activities,omitempty"`
-	SavedBy        []SavedPlace   `gorm:"foreignKey:PlaceID" json:"saved_by,omitempty"`
+	TripActivities []TripActivity `gorm:"foreignKey:PlaceID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"trip_activities,omitempty"`
+	SavedBy        []SavedPlace   `gorm:"foreignKey:PlaceID;constraint:OnDelete:CASCADE" json:"saved_by,omitempty"`
+	Reviews        []PlaceReview  `gorm:"foreignKey:PlaceID;constraint:OnDelete:CASCADE;" json:"reviews,omitempty"`
 }
 
 func (Place) TableName() string {

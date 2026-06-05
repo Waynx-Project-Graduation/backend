@@ -12,8 +12,17 @@ type TripRepository struct {
 	db *gorm.DB
 }
 
+func (r *TripRepository) DB() *gorm.DB {
+	return r.db
+}
+
 func NewTripRepository(db *gorm.DB) *TripRepository {
 	return &TripRepository{db: db}
+}
+
+// WithTx returns a new repository instance that uses the provided transaction.
+func (r *TripRepository) WithTx(tx *gorm.DB) *TripRepository {
+	return &TripRepository{db: tx}
 }
 
 func (r *TripRepository) Create(trip *models.Trip) error {
@@ -141,7 +150,7 @@ func (r *TripRepository) FindActivityOwner(activityID uuid.UUID) (uuid.UUID, err
 		JOIN trip_days td ON td.id = ta.trip_day_id
 		JOIN trip_destinations dest ON dest.id = td.trip_destination_id
 		JOIN trips t ON t.id = dest.trip_id
-		WHERE ta.id = ? AND t.deleted_at IS NULL
+		WHERE ta.id = ?
 	`, activityID).Scan(&userID).Error
 	if err != nil || userID == "" {
 		return uuid.Nil, errors.New("activity owner not found")

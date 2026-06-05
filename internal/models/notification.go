@@ -14,6 +14,9 @@ type Notification struct {
 	Body      string    `gorm:"type:text" json:"body"`
 	IsRead    bool      `gorm:"default:false" json:"is_read"`
 	CreatedAt time.Time `json:"created_at"`
+
+	// Relations
+	User User `gorm:"foreignKey:UserID" json:"user,omitempty"`
 }
 
 func (Notification) TableName() string {

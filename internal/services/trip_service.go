@@ -76,6 +76,19 @@ func (s *TripService) CreateTrip(userID uuid.UUID, input CreateTripInput) (*mode
 	if endDate.Before(startDate) {
 		return nil, errors.New("end_date must be after start_date")
 	}
+	
+	if input.TravelersCount < 1 {
+		return nil, errors.New("travelers_count must be at least 1")
+	}
+	if len(input.Preferences.Interests) == 0 {
+		return nil, errors.New("at least one interest must be provided")
+	}
+	if input.Preferences.TravelCompanion == "" {
+		return nil, errors.New("travel_companion must be specified")
+	}
+	if input.Preferences.Budget == "" {
+		return nil, errors.New("budget must be specified")
+	}
 
 	numDays := int(endDate.Sub(startDate).Hours()/24) + 1
 
@@ -143,6 +156,15 @@ func (s *TripService) saveItinerary(tripID uuid.UUID, startDate time.Time, aiRes
 		return errors.New("AI returned an empty plan")
 	}
 
+	tx := s.tripRepo.DB().Begin()
+	if tx.Error != nil {
+		log.Printf("Transaction error: %v", tx.Error)
+		return errors.New("failed to begin transaction")
+	}
+	defer tx.Rollback()
+
+	txRepo := s.tripRepo.WithTx(tx)
+
 	globalDayOffset := 0
 
 	for destIdx, aiDest := range aiResp.Plan.Destinations {
@@ -157,8 +179,9 @@ func (s *TripService) saveItinerary(tripID uuid.UUID, startDate time.Time, aiRes
 			OrderInTrip:   destIdx + 1,
 		}
 
-		if err := s.tripRepo.CreateDestinations([]models.TripDestination{dest}); err != nil {
-			return fmt.Errorf("failed to create destination %s: %w", aiDest.City, err)
+		if err := txRepo.CreateDestinations([]models.TripDestination{dest}); err != nil {
+			log.Printf("Destination save error: %v", err)
+			return fmt.Errorf("failed to save destination %s", aiDest.City)
 		}
 
 		// Create days and activities for this destination
@@ -175,8 +198,9 @@ func (s *TripService) saveItinerary(tripID uuid.UUID, startDate time.Time, aiRes
 				HoursUsed:         aiDay.HoursUsed,
 			}
 
-			if err := s.tripRepo.CreateTripDays([]models.TripDay{tripDay}); err != nil {
-				return fmt.Errorf("failed to create day %d: %w", aiDay.DayNumber, err)
+			if err := txRepo.CreateTripDays([]models.TripDay{tripDay}); err != nil {
+				log.Printf("Trip day save error: %v", err)
+				return fmt.Errorf("failed to save day %d", aiDay.DayNumber)
 			}
 
 			var activities []models.TripActivity
@@ -205,8 +229,9 @@ func (s *TripService) saveItinerary(tripID uuid.UUID, startDate time.Time, aiRes
 			}
 
 			if len(activities) > 0 {
-				if err := s.tripRepo.CreateActivities(activities); err != nil {
-					return fmt.Errorf("failed to create activities for day %d: %w", aiDay.DayNumber, err)
+				if err := txRepo.CreateActivities(activities); err != nil {
+					log.Printf("Activities save error: %v", err)
+					return fmt.Errorf("failed to save activities for day %d", aiDay.DayNumber)
 				}
 			}
 
@@ -214,7 +239,7 @@ func (s *TripService) saveItinerary(tripID uuid.UUID, startDate time.Time, aiRes
 		}
 	}
 
-	return nil
+	return tx.Commit().Error
 }
 
 // ── Read ────────────────────────────────────────────────────────────────────
@@ -315,7 +340,8 @@ func (s *TripService) RegenerateItinerary(tripID, userID uuid.UUID) (*models.Tri
 
 	aiResp, err := s.aiClient.GetRecommendation(aiReq)
 	if err != nil {
-		return nil, fmt.Errorf("AI service unavailable: %w", err)
+		log.Printf("AI regeneration failed: %v", err)
+		return nil, errors.New("AI service unavailable")
 	}
 
 	if err := s.saveItinerary(tripID, trip.StartDate, aiResp); err != nil {

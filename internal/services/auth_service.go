@@ -110,7 +110,7 @@ func (s *AuthService) Register(input RegisterInput) (*AuthResponse, error) {
 	}
 
 	// Hash password
-	hash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(input.Password), 12)
 	if err != nil {
 		return nil, errors.New("failed to hash password")
 	}
@@ -277,7 +277,7 @@ func (s *AuthService) ResetPassword(input ResetPasswordInput) error {
 	}
 
 	// Hash the new password
-	hash, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), bcrypt.DefaultCost)
+	hash, err := bcrypt.GenerateFromPassword([]byte(input.NewPassword), 12)
 	if err != nil {
 		return errors.New("failed to hash password")
 	}

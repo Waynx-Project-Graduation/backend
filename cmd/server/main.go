@@ -168,8 +168,9 @@ func main() {
 
 	// Start server
 	addr := ":" + cfg.Port
-	log.Printf("🚀 Trip Planner API starting on http://localhost%s", addr)
-	log.Printf("📋 Health check: http://localhost%s/health", addr)
+	log.Printf("🚀 Trip Planner API starting on http://localhost:%s\n", cfg.Port)
+	log.Printf("📋 Health check: http://localhost:%s/health\n", cfg.Port)
+	log.Printf("📚 Swagger Documentation: http://localhost:%s/swagger/index.html\n", cfg.Port)
 	if err := r.Run(addr); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}

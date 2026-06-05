@@ -15,6 +15,18 @@ import (
 	"google.golang.org/api/option"
 )
 
+// sanitizeJSON aggressively strips markdown formatting from AI responses
+func sanitizeJSON(input string) string {
+	input = strings.TrimSpace(input)
+	if strings.HasPrefix(input, "```json") {
+		input = strings.TrimPrefix(input, "```json")
+	} else if strings.HasPrefix(input, "```") {
+		input = strings.TrimPrefix(input, "```")
+	}
+	input = strings.TrimSuffix(input, "```")
+	return strings.TrimSpace(input)
+}
+
 // AIClient communicates with the WAYNX recommendation API and Google Gemini
 type AIClient struct {
 	geminiAPIKey   string
@@ -353,8 +365,9 @@ Reply ONLY with a valid JSON object matching this structure:
 	}
 
 	var result ChatResponse
-	if err := json.Unmarshal([]byte(text), &result); err != nil {
-		log.Printf("Failed to unmarshal JSON from Gemini: %s", string(text))
+	cleanJSON := sanitizeJSON(string(text))
+	if err := json.Unmarshal([]byte(cleanJSON), &result); err != nil {
+		log.Printf("Failed to unmarshal JSON from Gemini: %s", cleanJSON)
 		return nil, fmt.Errorf("failed to parse AI JSON response: %w", err)
 	}
 

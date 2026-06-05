@@ -14,6 +14,7 @@ type SavedPlace struct {
 	CreatedAt time.Time `json:"created_at"`
 
 	// Relations
+	User  User  `gorm:"foreignKey:UserID" json:"user,omitempty"`
 	Place Place `gorm:"foreignKey:PlaceID" json:"place,omitempty"`
 }
 

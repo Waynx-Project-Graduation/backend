@@ -19,18 +19,22 @@ type User struct {
 	ProviderID     string         `gorm:"type:text" json:"-"`
 	AvatarURL      string         `gorm:"type:text" json:"avatar_url"`
 	City           string         `gorm:"type:text" json:"city"`
+	Role           string         `gorm:"type:text;default:'user';not null" json:"role"`
 	ExplorerPoints int            `gorm:"default:0" json:"explorer_points"`
 	BadgeType      string         `gorm:"type:text;default:'explorer'" json:"badge_type"`
-	Preferences    Preferences    `gorm:"type:text" json:"preferences"`
+	Preferences    Preferences    `gorm:"type:jsonb" json:"preferences"`
 	LastLogin      *time.Time     `json:"last_login,omitempty"`
 	CreatedAt      time.Time      `json:"created_at"`
 	UpdatedAt      time.Time      `json:"updated_at"`
 	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`
 
 	// Relations
-	Trips        []Trip        `gorm:"foreignKey:UserID" json:"trips,omitempty"`
-	SavedPlaces  []SavedPlace  `gorm:"foreignKey:UserID" json:"saved_places,omitempty"`
-	ChatSessions []ChatSession `gorm:"foreignKey:UserID" json:"chat_sessions,omitempty"`
+	Trips         []Trip         `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;" json:"trips,omitempty"`
+	SavedPlaces   []SavedPlace   `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;" json:"saved_places,omitempty"`
+	ChatSessions  []ChatSession  `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;" json:"chat_sessions,omitempty"`
+	Notifications []Notification `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;" json:"notifications,omitempty"`
+	Reviews       []PlaceReview  `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;" json:"reviews,omitempty"`
+	TripMembers   []TripMember   `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;" json:"trip_members,omitempty"`
 }
 
 // BeforeCreate generates a UUID before inserting (replaces gen_random_uuid())
