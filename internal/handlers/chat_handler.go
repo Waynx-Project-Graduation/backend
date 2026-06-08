@@ -81,6 +81,35 @@ func (h *ChatHandler) GetSession(c *gin.Context) {
 	utils.Success(c, session)
 }
 
+// PUT /api/chat/:id — Rename a chat session
+func (h *ChatHandler) RenameSession(c *gin.Context) {
+	userID := getUserID(c)
+	sessionID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		utils.BadRequest(c, "invalid session ID")
+		return
+	}
+
+	var body struct {
+		Title string `json:"title" binding:"required,min=1"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		utils.BadRequest(c, err.Error())
+		return
+	}
+
+	if err := h.chatService.RenameSession(sessionID, userID, body.Title); err != nil {
+		if err.Error() == "access denied" {
+			utils.Forbidden(c, err.Error())
+			return
+		}
+		utils.NotFound(c, err.Error())
+		return
+	}
+
+	utils.Success(c, gin.H{"message": "session renamed successfully"})
+}
+
 // DELETE /api/chat/:id — Delete a chat session
 func (h *ChatHandler) DeleteSession(c *gin.Context) {
 	userID := getUserID(c)

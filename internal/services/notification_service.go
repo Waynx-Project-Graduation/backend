@@ -41,3 +41,7 @@ func (s *NotificationService) MarkAsRead(id uint, userID uuid.UUID) error {
 func (s *NotificationService) MarkAllAsRead(userID uuid.UUID) error {
 	return s.notifRepo.MarkAllAsRead(userID)
 }
+
+func (s *NotificationService) UnreadCount(userID uuid.UUID) (int64, error) {
+	return s.notifRepo.UnreadCount(userID)
+}

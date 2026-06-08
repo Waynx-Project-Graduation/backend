@@ -185,6 +185,30 @@ func (h *PlaceHandler) TrendingSearches(c *gin.Context) {
 	utils.Success(c, trending)
 }
 
+// GET /api/places/:id/save — Check if user has saved this place
+func (h *PlaceHandler) IsSaved(c *gin.Context) {
+	userID := getUserID(c)
+	placeID, err := strconv.ParseUint(c.Param("id"), 10, 64)
+	if err != nil {
+		utils.BadRequest(c, "invalid place ID")
+		return
+	}
+
+	isSaved, _ := h.savedPlaceService.IsSaved(userID, uint(placeID))
+	utils.Success(c, gin.H{"is_saved": isSaved})
+}
+
+// GET /api/places/cities — List all available cities
+func (h *PlaceHandler) ListCities(c *gin.Context) {
+	cities, err := h.placeService.ListCities()
+	if err != nil {
+		utils.InternalError(c, "failed to list cities")
+		return
+	}
+
+	utils.Success(c, cities)
+}
+
 // POST /api/places/:id/save — Save a place to favorites
 func (h *PlaceHandler) SavePlace(c *gin.Context) {
 	userID := getUserID(c)

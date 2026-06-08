@@ -170,6 +170,34 @@ func (h *TripHandler) RegenerateItinerary(c *gin.Context) {
 	utils.Success(c, trip)
 }
 
+// POST /api/trips/:id/activities
+func (h *TripHandler) CreateActivity(c *gin.Context) {
+	userID := getUserID(c)
+	tripID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		utils.BadRequest(c, "invalid trip ID")
+		return
+	}
+
+	var input services.CreateActivityInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		utils.BadRequest(c, err.Error())
+		return
+	}
+
+	activity, err := h.tripService.CreateActivity(tripID, userID, input)
+	if err != nil {
+		if err.Error() == "access denied" {
+			utils.Forbidden(c, err.Error())
+			return
+		}
+		utils.BadRequest(c, err.Error())
+		return
+	}
+
+	utils.Created(c, activity)
+}
+
 // PUT /api/trips/:id/activities/:activityId
 func (h *TripHandler) UpdateActivity(c *gin.Context) {
 	userID := getUserID(c)

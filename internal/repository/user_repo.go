@@ -76,3 +76,8 @@ func (r *UserRepository) CountDistinctDestinations(userID uuid.UUID) (int64, err
 func (r *UserRepository) UpdateExplorerPoints(userID uuid.UUID, points int) error {
 	return r.db.Model(&models.User{}).Where("id = ?", userID).Update("explorer_points", points).Error
 }
+
+// SoftDelete performs a soft delete on a user account
+func (r *UserRepository) SoftDelete(userID uuid.UUID) error {
+	return r.db.Where("id = ?", userID).Delete(&models.User{}).Error
+}

@@ -171,6 +171,18 @@ func (s *ChatService) DeleteSession(sessionID, userID uuid.UUID) error {
 	return s.chatRepo.DeleteSession(sessionID)
 }
 
+// RenameSession updates the title of a chat session
+func (s *ChatService) RenameSession(sessionID, userID uuid.UUID, title string) error {
+	session, err := s.chatRepo.FindSessionByID(sessionID)
+	if err != nil {
+		return errors.New("chat session not found")
+	}
+	if session.UserID != userID {
+		return errors.New("access denied")
+	}
+	return s.chatRepo.UpdateSessionTitle(sessionID, title)
+}
+
 func toMessageDetail(msg *models.ChatMessage) MessageDetail {
 	return MessageDetail{
 		ID:            msg.ID,

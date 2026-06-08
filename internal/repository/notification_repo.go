@@ -41,3 +41,11 @@ func (r *NotificationRepository) MarkAllAsRead(userID uuid.UUID) error {
 		Where("user_id = ? AND is_read = false", userID).
 		Update("is_read", true).Error
 }
+
+func (r *NotificationRepository) UnreadCount(userID uuid.UUID) (int64, error) {
+	var count int64
+	err := r.db.Model(&models.Notification{}).
+		Where("user_id = ? AND is_read = false", userID).
+		Count(&count).Error
+	return count, err
+}

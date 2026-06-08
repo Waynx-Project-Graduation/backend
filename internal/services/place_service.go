@@ -58,3 +58,7 @@ func (s *PlaceService) TrendingSearches(limit int) ([]string, error) {
 func (s *PlaceService) UpdateThumbnail(id uint, url string) error {
 	return s.placeRepo.UpdateThumbnail(id, url)
 }
+
+func (s *PlaceService) ListCities() ([]repository.CityInfo, error) {
+	return s.placeRepo.ListCities()
+}

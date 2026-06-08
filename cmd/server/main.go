@@ -51,6 +51,10 @@ func main() {
 	tripRepo := repository.NewTripRepository(db)
 	chatRepo := repository.NewChatRepository(db)
 	savedPlaceRepo := repository.NewSavedPlaceRepository(db)
+	notifRepo := repository.NewNotificationRepository(db)
+	reviewRepo := repository.NewReviewRepository(db)
+	expenseRepo := repository.NewExpenseRepository(db)
+	memberRepo := repository.NewMemberRepository(db)
 
 	// ── Services ──────────────────────────────────────────────────────
 	authService := services.NewAuthService(userRepo, jwtManager)
@@ -60,6 +64,10 @@ func main() {
 	chatService := services.NewChatService(chatRepo, aiClient)
 	savedPlaceService := services.NewSavedPlaceService(savedPlaceRepo, placeRepo)
 	cloudinaryService := services.NewCloudinaryService(cfg.CloudinaryURL)
+	notifService := services.NewNotificationService(notifRepo)
+	reviewService := services.NewReviewService(reviewRepo, placeRepo)
+	expenseService := services.NewExpenseService(expenseRepo, tripRepo)
+	memberService := services.NewMemberService(memberRepo, tripRepo, userRepo)
 
 	// ── Handlers ──────────────────────────────────────────────────────
 	authHandler := handlers.NewAuthHandler(authService)
@@ -67,6 +75,10 @@ func main() {
 	tripHandler := handlers.NewTripHandler(tripService)
 	placeHandler := handlers.NewPlaceHandler(placeService, savedPlaceService, cloudinaryService)
 	chatHandler := handlers.NewChatHandler(chatService)
+	notifHandler := handlers.NewNotificationHandler(notifService)
+	reviewHandler := handlers.NewReviewHandler(reviewService)
+	expenseHandler := handlers.NewExpenseHandler(expenseService)
+	memberHandler := handlers.NewMemberHandler(memberService)
 
 	// ── Router Setup ──────────────────────────────────────────────────
 	r := gin.Default()
@@ -95,7 +107,7 @@ func main() {
 			auth.POST("/google", authHandler.GoogleAuth)
 			auth.POST("/forgot-password", authHandler.ForgotPassword)
 			auth.POST("/reset-password", authHandler.ResetPassword)
-			auth.POST("/refresh", authHandler.RefreshToken) // public: must work with expired access tokens
+			auth.POST("/refresh", authHandler.RefreshToken)
 		}
 
 		// ── Auth Routes (Protected) ──────────────────────────
@@ -116,6 +128,7 @@ func main() {
 			users.PUT("/avatar", userHandler.UpdateAvatar)
 			users.GET("/stats", userHandler.GetStats)
 			users.GET("/saved-places", userHandler.GetSavedPlaces)
+			users.DELETE("/account", userHandler.DeleteAccount)
 		}
 
 		// ── Place Routes (Public) ────────────────────────────
@@ -125,17 +138,23 @@ func main() {
 			places.GET("/popular", placeHandler.PopularPlaces)
 			places.GET("/search", placeHandler.SearchPlaces)
 			places.GET("/categories", placeHandler.ListCategories)
+			places.GET("/cities", placeHandler.ListCities)
 			places.GET("/trending", placeHandler.TrendingSearches)
 			places.GET("/:id", placeHandler.GetPlace)
-			places.POST("/:id/photo", placeHandler.UploadPlacePhoto) // Optionally protected
+			places.GET("/:id/reviews", reviewHandler.ListReviews)
 		}
 
-		// ── Place Routes (Protected — Save/Unsave) ───────────
+		// ── Place Routes (Protected) ─────────────────────────
 		placesProtected := api.Group("/places")
 		placesProtected.Use(middleware.AuthMiddleware(jwtManager))
 		{
+			placesProtected.POST("/:id/photo", placeHandler.UploadPlacePhoto)
 			placesProtected.POST("/:id/save", placeHandler.SavePlace)
 			placesProtected.DELETE("/:id/save", placeHandler.UnsavePlace)
+			placesProtected.GET("/:id/save", placeHandler.IsSaved)
+			placesProtected.POST("/:id/reviews", reviewHandler.CreateReview)
+			placesProtected.PUT("/:id/reviews/:reviewId", reviewHandler.UpdateReview)
+			placesProtected.DELETE("/:id/reviews/:reviewId", reviewHandler.DeleteReview)
 		}
 
 		// ── Trip Routes (Protected) ──────────────────────────
@@ -148,18 +167,42 @@ func main() {
 			trips.PUT("/:id", tripHandler.UpdateTrip)
 			trips.DELETE("/:id", tripHandler.DeleteTrip)
 			trips.POST("/:id/regenerate", tripHandler.RegenerateItinerary)
+			trips.POST("/:id/activities", tripHandler.CreateActivity)
 			trips.PUT("/:id/activities/:activityId", tripHandler.UpdateActivity)
 			trips.DELETE("/:id/activities/:activityId", tripHandler.DeleteActivity)
+
+			// Trip expenses
+			trips.POST("/:id/expenses", expenseHandler.CreateExpense)
+			trips.GET("/:id/expenses", expenseHandler.ListExpenses)
+			trips.PUT("/:id/expenses/:expenseId", expenseHandler.UpdateExpense)
+			trips.DELETE("/:id/expenses/:expenseId", expenseHandler.DeleteExpense)
+
+			// Trip members
+			trips.POST("/:id/members", memberHandler.AddMember)
+			trips.GET("/:id/members", memberHandler.ListMembers)
+			trips.PUT("/:id/members/:userId", memberHandler.UpdateMemberRole)
+			trips.DELETE("/:id/members/:userId", memberHandler.RemoveMember)
 		}
 
-		// ── Chat Routes (Protected — Ask WAYNX) ─────────────
+		// ── Chat Routes (Protected) ──────────────────────────
 		chat := api.Group("/chat")
 		chat.Use(middleware.AuthMiddleware(jwtManager))
 		{
 			chat.POST("", chatHandler.SendMessage)
 			chat.GET("/history", chatHandler.ListSessions)
 			chat.GET("/:id", chatHandler.GetSession)
+			chat.PUT("/:id", chatHandler.RenameSession)
 			chat.DELETE("/:id", chatHandler.DeleteSession)
+		}
+
+		// ── Notification Routes (Protected) ──────────────────
+		notifications := api.Group("/notifications")
+		notifications.Use(middleware.AuthMiddleware(jwtManager))
+		{
+			notifications.GET("", notifHandler.ListNotifications)
+			notifications.GET("/unread-count", notifHandler.UnreadCount)
+			notifications.PUT("/:id/read", notifHandler.MarkAsRead)
+			notifications.PUT("/read-all", notifHandler.MarkAllAsRead)
 		}
 	}
 

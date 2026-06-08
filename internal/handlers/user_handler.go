@@ -153,6 +153,18 @@ func (h *UserHandler) UpdateAvatar(c *gin.Context) {
 	utils.Success(c, user)
 }
 
+// DELETE /api/users/account — Delete user account (soft delete)
+func (h *UserHandler) DeleteAccount(c *gin.Context) {
+	userID := getUserID(c)
+
+	if err := h.userService.DeleteAccount(userID); err != nil {
+		utils.InternalError(c, err.Error())
+		return
+	}
+
+	utils.Success(c, gin.H{"message": "account deleted successfully"})
+}
+
 // getUserID extracts the user ID from gin context (set by auth middleware)
 func getUserID(c *gin.Context) uuid.UUID {
 	id, exists := c.Get("userID")

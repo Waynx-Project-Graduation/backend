@@ -35,6 +35,19 @@ func (h *NotificationHandler) ListNotifications(c *gin.Context) {
 	})
 }
 
+// GET /api/notifications/unread-count
+func (h *NotificationHandler) UnreadCount(c *gin.Context) {
+	userID := getUserID(c)
+
+	count, err := h.notifService.UnreadCount(userID)
+	if err != nil {
+		utils.InternalError(c, "failed to get unread count")
+		return
+	}
+
+	utils.Success(c, gin.H{"unread_count": count})
+}
+
 // PUT /api/notifications/:id/read
 func (h *NotificationHandler) MarkAsRead(c *gin.Context) {
 	userID := getUserID(c)

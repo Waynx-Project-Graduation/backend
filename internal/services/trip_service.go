@@ -60,6 +60,19 @@ type UpdateActivityInput struct {
 	ActivityType  string  `json:"activity_type"`
 }
 
+type CreateActivityInput struct {
+	TripDayID     uuid.UUID `json:"trip_day_id" binding:"required"`
+	ActivityName  string    `json:"activity_name" binding:"required"`
+	Description   string    `json:"description"`
+	Category      string    `json:"category"`
+	StartTime     string    `json:"start_time"`
+	EndTime       string    `json:"end_time"`
+	DurationHours int       `json:"duration_hours"`
+	EstimatedCost float64   `json:"estimated_cost"`
+	ActivityType  string    `json:"activity_type"`
+	PlaceID       *uint     `json:"place_id"`
+}
+
 // ── Create Trip ─────────────────────────────────────────────────────────────
 
 func (s *TripService) CreateTrip(userID uuid.UUID, input CreateTripInput) (*models.Trip, error) {
@@ -355,6 +368,40 @@ func (s *TripService) RegenerateItinerary(tripID, userID uuid.UUID) (*models.Tri
 }
 
 // ── Activity Editing ────────────────────────────────────────────────────────
+
+func (s *TripService) CreateActivity(tripID, userID uuid.UUID, input CreateActivityInput) (*models.TripActivity, error) {
+	trip, err := s.tripRepo.FindByID(tripID)
+	if err != nil {
+		return nil, errors.New("trip not found")
+	}
+	if trip.UserID != userID {
+		return nil, errors.New("access denied")
+	}
+
+	// Validate the day belongs to this trip
+	if err := s.tripRepo.ValidateDayBelongsToTrip(input.TripDayID, tripID); err != nil {
+		return nil, errors.New("trip day not found in this trip")
+	}
+
+	activity := &models.TripActivity{
+		TripDayID:     input.TripDayID,
+		PlaceID:       input.PlaceID,
+		ActivityName:  input.ActivityName,
+		Description:   input.Description,
+		Category:      input.Category,
+		DurationHours: input.DurationHours,
+		StartTime:     input.StartTime,
+		EndTime:       input.EndTime,
+		EstimatedCost: input.EstimatedCost,
+		ActivityType:  input.ActivityType,
+	}
+
+	if err := s.tripRepo.CreateActivities([]models.TripActivity{*activity}); err != nil {
+		return nil, errors.New("failed to create activity")
+	}
+
+	return activity, nil
+}
 
 func (s *TripService) UpdateActivity(activityID, userID uuid.UUID, input UpdateActivityInput) (*models.TripActivity, error) {
 	activity, err := s.tripRepo.FindActivity(activityID)

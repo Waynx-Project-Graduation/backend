@@ -175,6 +175,24 @@ type CategoryInfo struct {
 	ImageURL string `json:"image_url"`
 }
 
+// CityInfo represents a city with its count of places
+type CityInfo struct {
+	City  string `json:"city"`
+	Count int64  `json:"count"`
+}
+
+// ListCities returns all distinct cities with their place counts
+func (r *PlaceRepository) ListCities() ([]CityInfo, error) {
+	var results []CityInfo
+	err := r.db.Model(&models.Place{}).
+		Select("city, COUNT(*) as count").
+		Where("city != ''").
+		Group("city").
+		Order("count DESC").
+		Find(&results).Error
+	return results, err
+}
+
 // toLowerCase converts a string slice to lowercase
 func toLowerCase(items []string) []string {
 	result := make([]string, len(items))

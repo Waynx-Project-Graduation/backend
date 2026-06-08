@@ -140,6 +140,16 @@ func (r *TripRepository) DeleteActivity(activityID uuid.UUID) error {
 	return r.db.Where("id = ?", activityID).Delete(&models.TripActivity{}).Error
 }
 
+// ValidateDayBelongsToTrip checks that a trip day belongs to the given trip.
+func (r *TripRepository) ValidateDayBelongsToTrip(dayID, tripID uuid.UUID) error {
+	var count int64
+	r.db.Model(&models.TripDay{}).Where("id = ? AND trip_id = ?", dayID, tripID).Count(&count)
+	if count == 0 {
+		return errors.New("trip day not found in this trip")
+	}
+	return nil
+}
+
 // FindActivityOwner returns the user ID that owns the given activity,
 // traversing the chain: activity → trip_day → trip_destination → trip.
 func (r *TripRepository) FindActivityOwner(activityID uuid.UUID) (uuid.UUID, error) {

@@ -136,3 +136,12 @@ func (s *UserService) GetStats(userID uuid.UUID) (*UserStats, error) {
 		ChatSessionsCount:   chatSessions,
 	}, nil
 }
+
+// DeleteAccount soft-deletes the user account
+func (s *UserService) DeleteAccount(userID uuid.UUID) error {
+	_, err := s.userRepo.FindByID(userID)
+	if err != nil {
+		return errors.New("user not found")
+	}
+	return s.userRepo.SoftDelete(userID)
+}
