@@ -76,24 +76,71 @@ backend/
 
 ### Installation
 
-```bash
-# 1. Clone the repository
-git clone https://github.com/Waynx-Project-Graduation/backend.git
-cd backend
+#### Option 1: Linux Users
+1. **Prerequisites**: Ensure Go (1.25 or higher) and Git are installed on your system.
+2. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/Waynx-Project-Graduation/backend.git
+   cd backend
+   ```
+3. **Configure Environment**:
+   ```bash
+   cp .env.example .env
+   # Open .env and set GEMINI_API_KEY, JWT_SECRET, etc.
+   ```
+4. **Download Dependencies & Run**:
+   ```bash
+   # Tidy Go modules
+   go mod tidy
 
-# 2. Configure Environment
-cp .env.example .env
-# Set GEMINI_API_KEY, WAYNX_API_URL, JWT_SECRET, CLOUDINARY_URL
+   # Seed the database with starter places
+   go run cmd/seed/main.go
 
-# 3. Download Dependencies
-go mod tidy
+   # Start the server
+   go run cmd/server/main.go
+   ```
 
-# 4. Run the automated seeder (populates DB with starter places)
-go run cmd/seed/main.go
+#### Option 2: Windows Users (using WSL - Recommended)
+Since the GORM SQLite driver uses CGO, it requires a C compiler (GCC) to compile natively on Windows. The easiest, cleanest way to run this project on Windows from scratch is using **WSL (Windows Subsystem for Linux)**:
 
-# 5. Launch the server
-go run cmd/server/main.go
-```
+1. **Install WSL**:
+   Open **PowerShell** as Administrator and run:
+   ```powershell
+   wsl --install
+   ```
+   *Restart your computer after the installation completes.*
+
+2. **Install Go and Git in WSL**:
+   Open your WSL terminal (e.g. Ubuntu) and install Go and Git:
+   ```bash
+   sudo apt update
+   sudo apt install golang-go git -y
+   ```
+
+3. **Clone the Repository**:
+   Navigate to your home directory (or any directory like `/mnt/c/...` if you want it on your Windows C: drive) and clone:
+   ```bash
+   git clone https://github.com/Waynx-Project-Graduation/backend.git
+   cd backend
+   ```
+
+4. **Configure Environment**:
+   ```bash
+   cp .env.example .env
+   # Open the .env file (e.g., nano .env) and set your GEMINI_API_KEY
+   ```
+
+5. **Download Dependencies & Run**:
+   ```bash
+   # Tidy Go modules
+   go mod tidy
+
+   # Seed the database with starter places
+   go run cmd/seed/main.go
+
+   # Start the server
+   go run cmd/server/main.go
+   ```
 
 The server boots on `http://localhost:8080`. Swagger docs available at `/swagger/index.html`.
 
