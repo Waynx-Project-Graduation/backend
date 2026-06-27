@@ -86,6 +86,11 @@ func main() {
 		description := strings.TrimSpace(row[11])
 		description = strings.TrimRight(description, "\r")
 
+		thumbnailURL := ""
+		if len(row) > 12 {
+			thumbnailURL = strings.TrimSpace(row[12])
+		}
+
 		place := models.Place{
 			ID:             uint(placeID),
 			Name:           strings.TrimSpace(row[1]),
@@ -99,6 +104,7 @@ func main() {
 			DurationNeeded: duration,
 			Rating:         rating,
 			Description:    description,
+			ThumbnailURL:   thumbnailURL,
 		}
 
 		result := db.Where("id = ?", place.ID).FirstOrCreate(&place)
