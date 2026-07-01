@@ -17,7 +17,18 @@ func NewChatHandler(chatService *services.ChatService) *ChatHandler {
 	return &ChatHandler{chatService: chatService}
 }
 
-// POST /api/chat — Send a message and get AI response
+// SendMessage godoc
+// @Summary      Send message
+// @Description  Send a message to the AI and get a response
+// @Tags         chat
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        input body services.SendMessageInput true "Message input"
+// @Success      201  {object}  models.ChatMessage
+// @Failure      400  {object}  utils.Response
+// @Failure      403  {object}  utils.Response
+// @Router       /chat [post]
 func (h *ChatHandler) SendMessage(c *gin.Context) {
 	userID := getUserID(c)
 
@@ -40,7 +51,17 @@ func (h *ChatHandler) SendMessage(c *gin.Context) {
 	utils.Created(c, resp)
 }
 
-// GET /api/chat/history — List chat sessions
+// ListSessions godoc
+// @Summary      List chat sessions
+// @Description  Get a paginated list of chat sessions for the user
+// @Tags         chat
+// @Produce      json
+// @Security     BearerAuth
+// @Param        page query int false "Page number" default(1)
+// @Param        per_page query int false "Items per page" default(10)
+// @Success      200  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /chat/history [get]
 func (h *ChatHandler) ListSessions(c *gin.Context) {
 	userID := getUserID(c)
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -59,7 +80,18 @@ func (h *ChatHandler) ListSessions(c *gin.Context) {
 	})
 }
 
-// GET /api/chat/:id — Get a specific chat session with messages
+// GetSession godoc
+// @Summary      Get chat session
+// @Description  Get a specific chat session with its messages
+// @Tags         chat
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Session ID (UUID)"
+// @Success      200  {object}  models.ChatSession
+// @Failure      400  {object}  utils.Response
+// @Failure      403  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Router       /chat/{id} [get]
 func (h *ChatHandler) GetSession(c *gin.Context) {
 	userID := getUserID(c)
 	sessionID, err := uuid.Parse(c.Param("id"))
@@ -81,7 +113,20 @@ func (h *ChatHandler) GetSession(c *gin.Context) {
 	utils.Success(c, session)
 }
 
-// PUT /api/chat/:id — Rename a chat session
+// RenameSession godoc
+// @Summary      Rename chat session
+// @Description  Rename an existing chat session
+// @Tags         chat
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Session ID (UUID)"
+// @Param        body body object{title=string} true "New title"
+// @Success      200  {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Failure      403  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Router       /chat/{id} [put]
 func (h *ChatHandler) RenameSession(c *gin.Context) {
 	userID := getUserID(c)
 	sessionID, err := uuid.Parse(c.Param("id"))
@@ -110,7 +155,18 @@ func (h *ChatHandler) RenameSession(c *gin.Context) {
 	utils.Success(c, gin.H{"message": "session renamed successfully"})
 }
 
-// DELETE /api/chat/:id — Delete a chat session
+// DeleteSession godoc
+// @Summary      Delete chat session
+// @Description  Delete a chat session
+// @Tags         chat
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Session ID (UUID)"
+// @Success      200  {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Failure      403  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Router       /chat/{id} [delete]
 func (h *ChatHandler) DeleteSession(c *gin.Context) {
 	userID := getUserID(c)
 	sessionID, err := uuid.Parse(c.Param("id"))

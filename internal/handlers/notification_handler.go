@@ -16,7 +16,17 @@ func NewNotificationHandler(notifService *services.NotificationService) *Notific
 	return &NotificationHandler{notifService: notifService}
 }
 
-// GET /api/notifications
+// ListNotifications godoc
+// @Summary      List notifications
+// @Description  Get a paginated list of notifications for the user
+// @Tags         notifications
+// @Produce      json
+// @Security     BearerAuth
+// @Param        page query int false "Page number" default(1)
+// @Param        per_page query int false "Items per page" default(10)
+// @Success      200  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /notifications [get]
 func (h *NotificationHandler) ListNotifications(c *gin.Context) {
 	userID := getUserID(c)
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -35,7 +45,15 @@ func (h *NotificationHandler) ListNotifications(c *gin.Context) {
 	})
 }
 
-// GET /api/notifications/unread-count
+// UnreadCount godoc
+// @Summary      Get unread count
+// @Description  Get the number of unread notifications for the user
+// @Tags         notifications
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /notifications/unread-count [get]
 func (h *NotificationHandler) UnreadCount(c *gin.Context) {
 	userID := getUserID(c)
 
@@ -48,7 +66,17 @@ func (h *NotificationHandler) UnreadCount(c *gin.Context) {
 	utils.Success(c, gin.H{"unread_count": count})
 }
 
-// PUT /api/notifications/:id/read
+// MarkAsRead godoc
+// @Summary      Mark notification as read
+// @Description  Mark a specific notification as read
+// @Tags         notifications
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path int true "Notification ID"
+// @Success      200  {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /notifications/{id}/read [put]
 func (h *NotificationHandler) MarkAsRead(c *gin.Context) {
 	userID := getUserID(c)
 	id, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -65,7 +93,15 @@ func (h *NotificationHandler) MarkAsRead(c *gin.Context) {
 	utils.Success(c, gin.H{"message": "notification marked as read"})
 }
 
-// PUT /api/notifications/read-all
+// MarkAllAsRead godoc
+// @Summary      Mark all notifications as read
+// @Description  Mark all unread notifications for the user as read
+// @Tags         notifications
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /notifications/read-all [put]
 func (h *NotificationHandler) MarkAllAsRead(c *gin.Context) {
 	userID := getUserID(c)
 

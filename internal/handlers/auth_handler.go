@@ -119,7 +119,16 @@ func (h *AuthHandler) Me(c *gin.Context) {
 	utils.Success(c, user)
 }
 
-// POST /api/auth/google
+// GoogleAuth godoc
+// @Summary      Google authentication
+// @Description  Authenticates a user via Google OAuth
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body body object{email=string,full_name=string,provider_id=string} true "Google Auth Info"
+// @Success      200  {object}  services.AuthResponse
+// @Failure      400  {object}  utils.Response
+// @Router       /auth/google [post]
 func (h *AuthHandler) GoogleAuth(c *gin.Context) {
 	var body struct {
 		Email      string `json:"email" binding:"required,email"`
@@ -140,7 +149,17 @@ func (h *AuthHandler) GoogleAuth(c *gin.Context) {
 	utils.Success(c, resp)
 }
 
-// POST /api/auth/forgot-password
+// ForgotPassword godoc
+// @Summary      Forgot password
+// @Description  Initiates password reset process
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        input body services.ForgotPasswordInput true "Email for password reset"
+// @Success      200  {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /auth/forgot-password [post]
 func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 	var input services.ForgotPasswordInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -157,7 +176,16 @@ func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 	utils.Success(c, resp)
 }
 
-// POST /api/auth/reset-password
+// ResetPassword godoc
+// @Summary      Reset password
+// @Description  Resets user password using a token
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        input body services.ResetPasswordInput true "Reset password info"
+// @Success      200  {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Router       /auth/reset-password [post]
 func (h *AuthHandler) ResetPassword(c *gin.Context) {
 	var input services.ResetPasswordInput
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -173,7 +201,15 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 	utils.Success(c, gin.H{"message": "password reset successfully"})
 }
 
-// POST /api/auth/logout
+// Logout godoc
+// @Summary      Logout user
+// @Description  Logs out the current user
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  utils.Response
+// @Router       /auth/logout [post]
 func (h *AuthHandler) Logout(c *gin.Context) {
 	// In a stateless JWT setup, logout is handled client-side by discarding tokens.
 	// This endpoint exists for API completeness and can be extended

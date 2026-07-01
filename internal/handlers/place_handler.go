@@ -142,7 +142,17 @@ func (h *PlaceHandler) PopularPlaces(c *gin.Context) {
 	utils.Success(c, places)
 }
 
-// GET /api/places/search — Search places
+// SearchPlaces godoc
+// @Summary      Search places
+// @Description  Search places by name or description
+// @Tags         places
+// @Produce      json
+// @Param        q query string true "Search query"
+// @Param        limit query int false "Result limit" default(10)
+// @Success      200  {array}   models.Place
+// @Failure      400  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /places/search [get]
 func (h *PlaceHandler) SearchPlaces(c *gin.Context) {
 	q := c.Query("q")
 	if q == "" {
@@ -161,7 +171,14 @@ func (h *PlaceHandler) SearchPlaces(c *gin.Context) {
 	utils.Success(c, places)
 }
 
-// GET /api/places/categories — List all available place categories
+// ListCategories godoc
+// @Summary      List categories
+// @Description  Get a list of all available place categories
+// @Tags         places
+// @Produce      json
+// @Success      200  {array}   string
+// @Failure      500  {object}  utils.Response
+// @Router       /places/categories [get]
 func (h *PlaceHandler) ListCategories(c *gin.Context) {
 	categories, err := h.placeService.ListCategories()
 	if err != nil {
@@ -172,7 +189,15 @@ func (h *PlaceHandler) ListCategories(c *gin.Context) {
 	utils.Success(c, categories)
 }
 
-// GET /api/places/trending — Get trending search terms
+// TrendingSearches godoc
+// @Summary      Trending searches
+// @Description  Get a list of trending search terms
+// @Tags         places
+// @Produce      json
+// @Param        limit query int false "Result limit" default(8)
+// @Success      200  {array}   string
+// @Failure      500  {object}  utils.Response
+// @Router       /places/trending [get]
 func (h *PlaceHandler) TrendingSearches(c *gin.Context) {
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "8"))
 
@@ -185,7 +210,16 @@ func (h *PlaceHandler) TrendingSearches(c *gin.Context) {
 	utils.Success(c, trending)
 }
 
-// GET /api/places/:id/save — Check if user has saved this place
+// IsSaved godoc
+// @Summary      Check saved status
+// @Description  Check if the authenticated user has saved a specific place
+// @Tags         places
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path int true "Place ID"
+// @Success      200  {object}  map[string]bool
+// @Failure      400  {object}  utils.Response
+// @Router       /places/{id}/save [get]
 func (h *PlaceHandler) IsSaved(c *gin.Context) {
 	userID := getUserID(c)
 	placeID, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -198,7 +232,14 @@ func (h *PlaceHandler) IsSaved(c *gin.Context) {
 	utils.Success(c, gin.H{"is_saved": isSaved})
 }
 
-// GET /api/places/cities — List all available cities
+// ListCities godoc
+// @Summary      List cities
+// @Description  Get a list of all available cities
+// @Tags         places
+// @Produce      json
+// @Success      200  {array}   string
+// @Failure      500  {object}  utils.Response
+// @Router       /places/cities [get]
 func (h *PlaceHandler) ListCities(c *gin.Context) {
 	cities, err := h.placeService.ListCities()
 	if err != nil {
@@ -209,7 +250,17 @@ func (h *PlaceHandler) ListCities(c *gin.Context) {
 	utils.Success(c, cities)
 }
 
-// POST /api/places/:id/save — Save a place to favorites
+// SavePlace godoc
+// @Summary      Save place
+// @Description  Save a place to the user's favorites
+// @Tags         places
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path int true "Place ID"
+// @Success      201  {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Router       /places/{id}/save [post]
 func (h *PlaceHandler) SavePlace(c *gin.Context) {
 	userID := getUserID(c)
 	placeID, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -230,7 +281,16 @@ func (h *PlaceHandler) SavePlace(c *gin.Context) {
 	utils.Created(c, gin.H{"message": "place saved successfully"})
 }
 
-// DELETE /api/places/:id/save — Remove a place from favorites
+// UnsavePlace godoc
+// @Summary      Unsave place
+// @Description  Remove a place from the user's favorites
+// @Tags         places
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path int true "Place ID"
+// @Success      200  {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Router       /places/{id}/save [delete]
 func (h *PlaceHandler) UnsavePlace(c *gin.Context) {
 	userID := getUserID(c)
 	placeID, err := strconv.ParseUint(c.Param("id"), 10, 64)
@@ -247,7 +307,19 @@ func (h *PlaceHandler) UnsavePlace(c *gin.Context) {
 	utils.Success(c, gin.H{"message": "place unsaved successfully"})
 }
 
-// POST /api/places/:id/photo — Upload a place photo
+// UploadPlacePhoto godoc
+// @Summary      Upload place photo
+// @Description  Uploads a new photo for a place
+// @Tags         places
+// @Accept       multipart/form-data
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path int true "Place ID"
+// @Param        photo formData file true "Photo file"
+// @Success      200  {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /places/{id}/photo [post]
 func (h *PlaceHandler) UploadPlacePhoto(c *gin.Context) {
 	placeID, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
