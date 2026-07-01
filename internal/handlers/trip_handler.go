@@ -111,7 +111,18 @@ func (h *TripHandler) GetTrip(c *gin.Context) {
 	utils.Success(c, trip)
 }
 
-// PUT /api/trips/:id
+// UpdateTrip godoc
+// @Summary      Update trip
+// @Description  Update details of an existing trip
+// @Tags         trips
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Trip ID (UUID)"
+// @Param        input body services.UpdateTripInput true "Trip update info"
+// @Success      200  {object}  models.Trip
+// @Failure      400  {object}  utils.Response
+// @Router       /trips/{id} [put]
 func (h *TripHandler) UpdateTrip(c *gin.Context) {
 	userID := getUserID(c)
 	tripID, err := uuid.Parse(c.Param("id"))
@@ -135,7 +146,16 @@ func (h *TripHandler) UpdateTrip(c *gin.Context) {
 	utils.Success(c, trip)
 }
 
-// DELETE /api/trips/:id
+// DeleteTrip godoc
+// @Summary      Delete trip
+// @Description  Delete a trip and its associated data
+// @Tags         trips
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Trip ID (UUID)"
+// @Success      200  {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Router       /trips/{id} [delete]
 func (h *TripHandler) DeleteTrip(c *gin.Context) {
 	userID := getUserID(c)
 	tripID, err := uuid.Parse(c.Param("id"))
@@ -152,7 +172,17 @@ func (h *TripHandler) DeleteTrip(c *gin.Context) {
 	utils.Success(c, gin.H{"message": "trip deleted successfully"})
 }
 
-// POST /api/trips/:id/regenerate
+// RegenerateItinerary godoc
+// @Summary      Regenerate itinerary
+// @Description  Use AI to regenerate the trip itinerary
+// @Tags         trips
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Trip ID (UUID)"
+// @Success      200  {object}  models.Trip
+// @Failure      400  {object}  utils.Response
+// @Failure      503  {object}  utils.Response
+// @Router       /trips/{id}/regenerate [post]
 func (h *TripHandler) RegenerateItinerary(c *gin.Context) {
 	userID := getUserID(c)
 	tripID, err := uuid.Parse(c.Param("id"))
@@ -170,7 +200,19 @@ func (h *TripHandler) RegenerateItinerary(c *gin.Context) {
 	utils.Success(c, trip)
 }
 
-// POST /api/trips/:id/activities
+// CreateActivity godoc
+// @Summary      Create activity
+// @Description  Add a new activity to a trip
+// @Tags         trips
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Trip ID (UUID)"
+// @Param        input body services.CreateActivityInput true "Activity info"
+// @Success      201  {object}  models.TripActivity
+// @Failure      400  {object}  utils.Response
+// @Failure      403  {object}  utils.Response
+// @Router       /trips/{id}/activities [post]
 func (h *TripHandler) CreateActivity(c *gin.Context) {
 	userID := getUserID(c)
 	tripID, err := uuid.Parse(c.Param("id"))
@@ -198,7 +240,20 @@ func (h *TripHandler) CreateActivity(c *gin.Context) {
 	utils.Created(c, activity)
 }
 
-// PUT /api/trips/:id/activities/:activityId
+// UpdateActivity godoc
+// @Summary      Update activity
+// @Description  Update an existing activity
+// @Tags         trips
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Trip ID (UUID)"
+// @Param        activityId path string true "Activity ID (UUID)"
+// @Param        input body services.UpdateActivityInput true "Activity update info"
+// @Success      200  {object}  models.TripActivity
+// @Failure      400  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Router       /trips/{id}/activities/{activityId} [put]
 func (h *TripHandler) UpdateActivity(c *gin.Context) {
 	userID := getUserID(c)
 	activityID, err := uuid.Parse(c.Param("activityId"))
@@ -222,7 +277,18 @@ func (h *TripHandler) UpdateActivity(c *gin.Context) {
 	utils.Success(c, activity)
 }
 
-// DELETE /api/trips/:id/activities/:activityId
+// DeleteActivity godoc
+// @Summary      Delete activity
+// @Description  Delete an activity from a trip
+// @Tags         trips
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Trip ID (UUID)"
+// @Param        activityId path string true "Activity ID (UUID)"
+// @Success      200  {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Router       /trips/{id}/activities/{activityId} [delete]
 func (h *TripHandler) DeleteActivity(c *gin.Context) {
 	userID := getUserID(c)
 	activityID, err := uuid.Parse(c.Param("activityId"))

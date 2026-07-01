@@ -15,7 +15,20 @@ func NewMemberHandler(memberService *services.MemberService) *MemberHandler {
 	return &MemberHandler{memberService: memberService}
 }
 
-// POST /api/trips/:id/members
+// AddMember godoc
+// @Summary      Add member
+// @Description  Add a new member to a trip
+// @Tags         members
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Trip ID (UUID)"
+// @Param        input body services.AddMemberInput true "Member info"
+// @Success      201  {object}  models.TripMember
+// @Failure      400  {object}  utils.Response
+// @Failure      403  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Router       /trips/{id}/members [post]
 func (h *MemberHandler) AddMember(c *gin.Context) {
 	userID := getUserID(c)
 	tripID, err := uuid.Parse(c.Param("id"))
@@ -46,7 +59,18 @@ func (h *MemberHandler) AddMember(c *gin.Context) {
 	utils.Created(c, member)
 }
 
-// GET /api/trips/:id/members
+// ListMembers godoc
+// @Summary      List members
+// @Description  Get a list of members for a trip
+// @Tags         members
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Trip ID (UUID)"
+// @Success      200  {array}   models.TripMember
+// @Failure      400  {object}  utils.Response
+// @Failure      403  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Router       /trips/{id}/members [get]
 func (h *MemberHandler) ListMembers(c *gin.Context) {
 	userID := getUserID(c)
 	tripID, err := uuid.Parse(c.Param("id"))
@@ -68,7 +92,21 @@ func (h *MemberHandler) ListMembers(c *gin.Context) {
 	utils.Success(c, members)
 }
 
-// PUT /api/trips/:id/members/:userId
+// UpdateMemberRole godoc
+// @Summary      Update member role
+// @Description  Update the role of a trip member
+// @Tags         members
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Trip ID (UUID)"
+// @Param        userId path string true "User ID (UUID)"
+// @Param        input body services.UpdateMemberRoleInput true "Role update info"
+// @Success      200  {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Failure      403  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Router       /trips/{id}/members/{userId} [put]
 func (h *MemberHandler) UpdateMemberRole(c *gin.Context) {
 	userID := getUserID(c)
 	tripID, err := uuid.Parse(c.Param("id"))
@@ -103,7 +141,19 @@ func (h *MemberHandler) UpdateMemberRole(c *gin.Context) {
 	utils.Success(c, gin.H{"message": "member role updated successfully"})
 }
 
-// DELETE /api/trips/:id/members/:userId
+// RemoveMember godoc
+// @Summary      Remove member
+// @Description  Remove a member from a trip
+// @Tags         members
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Trip ID (UUID)"
+// @Param        userId path string true "User ID (UUID)"
+// @Success      200  {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Failure      403  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Router       /trips/{id}/members/{userId} [delete]
 func (h *MemberHandler) RemoveMember(c *gin.Context) {
 	userID := getUserID(c)
 	tripID, err := uuid.Parse(c.Param("id"))

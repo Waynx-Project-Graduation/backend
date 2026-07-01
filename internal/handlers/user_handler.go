@@ -25,7 +25,18 @@ func NewUserHandler(userService *services.UserService, authService *services.Aut
 	}
 }
 
-// PUT /api/users/profile — Update user profile
+// UpdateProfile godoc
+// @Summary      Update user profile
+// @Description  Updates the authenticated user's profile information
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        input body services.UpdateProfileInput true "Profile info"
+// @Success      200  {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /users/profile [put]
 func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	userID := getUserID(c)
 
@@ -44,7 +55,18 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	utils.Success(c, user)
 }
 
-// PUT /api/users/preferences — Update travel preferences
+// UpdatePreferences godoc
+// @Summary      Update travel preferences
+// @Description  Updates the authenticated user's travel preferences
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        input body services.UpdatePreferencesInput true "Preferences info"
+// @Success      200  {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /users/preferences [put]
 func (h *UserHandler) UpdatePreferences(c *gin.Context) {
 	userID := getUserID(c)
 
@@ -63,7 +85,19 @@ func (h *UserHandler) UpdatePreferences(c *gin.Context) {
 	utils.Success(c, user)
 }
 
-// PUT /api/users/password — Change password
+// ChangePassword godoc
+// @Summary      Change password
+// @Description  Changes the authenticated user's password
+// @Tags         users
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        input body services.ChangePasswordInput true "Password info"
+// @Success      200  {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Failure      401  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /users/password [put]
 func (h *UserHandler) ChangePassword(c *gin.Context) {
 	userID := getUserID(c)
 
@@ -85,7 +119,15 @@ func (h *UserHandler) ChangePassword(c *gin.Context) {
 	utils.Success(c, gin.H{"message": "password updated successfully"})
 }
 
-// GET /api/users/stats — Get user profile statistics
+// GetStats godoc
+// @Summary      Get user stats
+// @Description  Retrieves statistics for the authenticated user
+// @Tags         users
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /users/stats [get]
 func (h *UserHandler) GetStats(c *gin.Context) {
 	userID := getUserID(c)
 
@@ -98,7 +140,17 @@ func (h *UserHandler) GetStats(c *gin.Context) {
 	utils.Success(c, stats)
 }
 
-// GET /api/users/saved-places — List user's saved/bookmarked places
+// GetSavedPlaces godoc
+// @Summary      Get saved places
+// @Description  Retrieves a paginated list of the user's saved places
+// @Tags         users
+// @Produce      json
+// @Security     BearerAuth
+// @Param        page query int false "Page number" default(1)
+// @Param        per_page query int false "Items per page" default(10)
+// @Success      200  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /users/saved-places [get]
 func (h *UserHandler) GetSavedPlaces(c *gin.Context) {
 	userID := getUserID(c)
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -117,7 +169,18 @@ func (h *UserHandler) GetSavedPlaces(c *gin.Context) {
 	})
 }
 
-// PUT /api/users/avatar — Update user avatar URL via file upload
+// UpdateAvatar godoc
+// @Summary      Update avatar
+// @Description  Uploads and updates the user's avatar image
+// @Tags         users
+// @Accept       multipart/form-data
+// @Produce      json
+// @Security     BearerAuth
+// @Param        avatar formData file true "Avatar image file"
+// @Success      200  {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /users/avatar [put]
 func (h *UserHandler) UpdateAvatar(c *gin.Context) {
 	userID := getUserID(c)
 
@@ -153,7 +216,15 @@ func (h *UserHandler) UpdateAvatar(c *gin.Context) {
 	utils.Success(c, user)
 }
 
-// DELETE /api/users/account — Delete user account (soft delete)
+// DeleteAccount godoc
+// @Summary      Delete account
+// @Description  Soft deletes the authenticated user's account
+// @Tags         users
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /users/account [delete]
 func (h *UserHandler) DeleteAccount(c *gin.Context) {
 	userID := getUserID(c)
 
