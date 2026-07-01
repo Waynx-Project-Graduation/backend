@@ -6,9 +6,9 @@ import (
 
 	"github.com/kemit/trip-planner/internal/config"
 	"github.com/kemit/trip-planner/internal/models"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+	"github.com/glebarez/sqlite"
 )
 
 // Connect opens a SQLite database at the path specified in config.
