@@ -17,7 +17,20 @@ func NewExpenseHandler(expenseService *services.ExpenseService) *ExpenseHandler 
 	return &ExpenseHandler{expenseService: expenseService}
 }
 
-// POST /api/trips/:id/expenses
+// CreateExpense godoc
+// @Summary      Create expense
+// @Description  Add a new expense to a trip
+// @Tags         expenses
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Trip ID (UUID)"
+// @Param        input body services.CreateExpenseInput true "Expense info"
+// @Success      201  {object}  models.TripExpense
+// @Failure      400  {object}  utils.Response
+// @Failure      403  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Router       /trips/{id}/expenses [post]
 func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
 	userID := getUserID(c)
 	tripID, err := uuid.Parse(c.Param("id"))
@@ -49,7 +62,20 @@ func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
 	utils.Created(c, expense)
 }
 
-// GET /api/trips/:id/expenses
+// ListExpenses godoc
+// @Summary      List expenses
+// @Description  Get a paginated list of expenses for a trip
+// @Tags         expenses
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Trip ID (UUID)"
+// @Param        page query int false "Page number" default(1)
+// @Param        per_page query int false "Items per page" default(10)
+// @Success      200  {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Failure      403  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Router       /trips/{id}/expenses [get]
 func (h *ExpenseHandler) ListExpenses(c *gin.Context) {
 	userID := getUserID(c)
 	tripID, err := uuid.Parse(c.Param("id"))
@@ -78,7 +104,21 @@ func (h *ExpenseHandler) ListExpenses(c *gin.Context) {
 	})
 }
 
-// PUT /api/trips/:id/expenses/:expenseId
+// UpdateExpense godoc
+// @Summary      Update expense
+// @Description  Update an existing expense
+// @Tags         expenses
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Trip ID (UUID)"
+// @Param        expenseId path string true "Expense ID (UUID)"
+// @Param        input body services.UpdateExpenseInput true "Expense update info"
+// @Success      200  {object}  models.TripExpense
+// @Failure      400  {object}  utils.Response
+// @Failure      403  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Router       /trips/{id}/expenses/{expenseId} [put]
 func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 	userID := getUserID(c)
 	tripID, err := uuid.Parse(c.Param("id"))
@@ -111,7 +151,19 @@ func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 	utils.Success(c, expense)
 }
 
-// DELETE /api/trips/:id/expenses/:expenseId
+// DeleteExpense godoc
+// @Summary      Delete expense
+// @Description  Delete an expense from a trip
+// @Tags         expenses
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id path string true "Trip ID (UUID)"
+// @Param        expenseId path string true "Expense ID (UUID)"
+// @Success      200  {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Failure      403  {object}  utils.Response
+// @Failure      404  {object}  utils.Response
+// @Router       /trips/{id}/expenses/{expenseId} [delete]
 func (h *ExpenseHandler) DeleteExpense(c *gin.Context) {
 	userID := getUserID(c)
 	tripID, err := uuid.Parse(c.Param("id"))
