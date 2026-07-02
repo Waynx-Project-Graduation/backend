@@ -22,7 +22,7 @@ func (s *PlaceService) ListPlacesAdvanced(filter repository.PlaceFilter) ([]mode
 	if filter.Page < 1 {
 		filter.Page = 1
 	}
-	if filter.PerPage < 1 || filter.PerPage > 50 {
+	if filter.PerPage < 1 || filter.PerPage > 500 {
 		filter.PerPage = 10
 	}
 	return s.placeRepo.ListWithFilters(filter)

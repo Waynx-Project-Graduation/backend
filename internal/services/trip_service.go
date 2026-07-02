@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -15,6 +16,16 @@ import (
 
 type TripAIProvider interface {
 	GetRecommendation(req RecommendRequest) (*RecommendResponse, error)
+}
+
+// dayStartHour is the hour each itinerary day begins (09:00).
+const dayStartHour = 9
+
+// formatHour converts an hour count into a "HH:MM" clock string, wrapping
+// past midnight (e.g. 25 -> "01:00") so times stay valid on long days.
+func formatHour(hour int) string {
+	h := ((hour % 24) + 24) % 24
+	return fmt.Sprintf("%02d:00", h)
 }
 
 type TripService struct {
@@ -36,9 +47,9 @@ func NewTripService(tripRepo *repository.TripRepository, placeRepo *repository.P
 // CreateTripInput — the frontend sends the same preferences JSON object
 // as stored in the user profile. The AI uses it to pick cities.
 type CreateTripInput struct {
-	StartDate      string            `json:"start_date" binding:"required"` // YYYY-MM-DD
-	EndDate        string            `json:"end_date" binding:"required"`   // YYYY-MM-DD
-	TravelersCount int               `json:"travelers_count" binding:"required,gte=1"`
+	StartDate      string             `json:"start_date" binding:"required"` // YYYY-MM-DD
+	EndDate        string             `json:"end_date" binding:"required"`   // YYYY-MM-DD
+	TravelersCount int                `json:"travelers_count" binding:"required,gte=1"`
 	Preferences    models.Preferences `json:"preferences" binding:"required"`
 }
 
@@ -73,6 +84,74 @@ type CreateActivityInput struct {
 	PlaceID       *uint     `json:"place_id"`
 }
 
+// ── Valid enum values (matching WAYNX AI engine dimensions) ─────────────────
+
+var (
+	validInterests  = map[string]bool{"history": true, "beach": true, "food": true, "wellness": true, "religious": true, "nature": true, "adventure": true}
+	validCompanions = map[string]bool{"solo": true, "couple": true, "family": true, "friends": true}
+	validBudgets    = map[string]bool{"low": true, "medium": true, "high": true}
+	validAgeGroups  = map[string]bool{"teen": true, "adult": true, "senior": true}
+	validCrowdPrefs = map[string]bool{"quiet": true, "moderate": true, "no_preference": true, "crowded": true}
+	validSeasons    = map[string]bool{"winter": true, "spring": true, "summer": true, "autumn": true}
+)
+
+func mapKeys(m map[string]bool) string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return strings.Join(keys, ", ")
+}
+
+// validatePreferences checks all 7 dimensions match the WAYNX AI engine's vocabulary.
+func validatePreferences(p models.Preferences) error {
+	if len(p.Interests) == 0 {
+		return errors.New("at least one interest must be provided")
+	}
+	for _, interest := range p.Interests {
+		if !validInterests[interest] {
+			return fmt.Errorf("invalid interest %q, must be one of: %s", interest, mapKeys(validInterests))
+		}
+	}
+
+	if p.TravelCompanion == "" {
+		return errors.New("travel_companion must be specified")
+	}
+	if !validCompanions[p.TravelCompanion] {
+		return fmt.Errorf("invalid travel_companion %q, must be one of: %s", p.TravelCompanion, mapKeys(validCompanions))
+	}
+
+	if p.Budget == "" {
+		return errors.New("budget must be specified")
+	}
+	if !validBudgets[p.Budget] {
+		return fmt.Errorf("invalid budget %q, must be one of: %s", p.Budget, mapKeys(validBudgets))
+	}
+
+	if p.AgeGroup == "" {
+		return errors.New("age_group must be specified")
+	}
+	if !validAgeGroups[p.AgeGroup] {
+		return fmt.Errorf("invalid age_group %q, must be one of: %s", p.AgeGroup, mapKeys(validAgeGroups))
+	}
+
+	if p.CrowdPreference == "" {
+		return errors.New("crowd_preference must be specified")
+	}
+	if !validCrowdPrefs[p.CrowdPreference] {
+		return fmt.Errorf("invalid crowd_preference %q, must be one of: %s", p.CrowdPreference, mapKeys(validCrowdPrefs))
+	}
+
+	if p.Season == "" {
+		return errors.New("season must be specified")
+	}
+	if !validSeasons[p.Season] {
+		return fmt.Errorf("invalid season %q, must be one of: %s", p.Season, mapKeys(validSeasons))
+	}
+
+	return nil
+}
+
 // ── Create Trip ─────────────────────────────────────────────────────────────
 
 func (s *TripService) CreateTrip(userID uuid.UUID, input CreateTripInput) (*models.Trip, error) {
@@ -89,18 +168,14 @@ func (s *TripService) CreateTrip(userID uuid.UUID, input CreateTripInput) (*mode
 	if endDate.Before(startDate) {
 		return nil, errors.New("end_date must be after start_date")
 	}
-	
+
 	if input.TravelersCount < 1 {
 		return nil, errors.New("travelers_count must be at least 1")
 	}
-	if len(input.Preferences.Interests) == 0 {
-		return nil, errors.New("at least one interest must be provided")
-	}
-	if input.Preferences.TravelCompanion == "" {
-		return nil, errors.New("travel_companion must be specified")
-	}
-	if input.Preferences.Budget == "" {
-		return nil, errors.New("budget must be specified")
+
+	// Validate all 7 AI dimensions against the WAYNX engine's vocabulary
+	if err := validatePreferences(input.Preferences); err != nil {
+		return nil, err
 	}
 
 	numDays := int(endDate.Sub(startDate).Hours()/24) + 1
@@ -117,22 +192,8 @@ func (s *TripService) CreateTrip(userID uuid.UUID, input CreateTripInput) (*mode
 			titleCaser.String(input.Preferences.Interests[1]))
 	}
 
-	// Create the trip parent record (status = draft)
-	trip := &models.Trip{
-		UserID:         userID,
-		Title:          title,
-		StartDate:      startDate,
-		EndDate:        endDate,
-		TravelersCount: input.TravelersCount,
-		Preferences:    input.Preferences,
-		Status:         "draft",
-	}
-
-	if err := s.tripRepo.Create(trip); err != nil {
-		return nil, errors.New("failed to create trip")
-	}
-
-	// Call AI service for recommendations + plan
+	// Call the WAYNX engine FIRST, before persisting anything. This avoids
+	// leaving orphan "draft" trips in the database when the engine is down.
 	aiReq := RecommendRequest{
 		Interests:        input.Preferences.Interests,
 		TravelCompanion:  input.Preferences.TravelCompanion,
@@ -145,20 +206,38 @@ func (s *TripService) CreateTrip(userID uuid.UUID, input CreateTripInput) (*mode
 
 	aiResp, err := s.aiClient.GetRecommendation(aiReq)
 	if err != nil {
-		log.Printf("AI service error (trip %s kept as draft): %v", trip.ID, err)
-		// Return trip as draft — AI is unavailable
-		return s.tripRepo.FindByID(trip.ID)
+		log.Printf("WAYNX engine error (trip not created): %v", err)
+		// Surface a clean error so the handler returns 503 instead of a
+		// misleading success with an empty itinerary.
+		return nil, errors.New("AI service unavailable")
+	}
+	if len(aiResp.Plan.Destinations) == 0 {
+		log.Printf("WAYNX engine returned an empty plan for user %s", userID)
+		return nil, errors.New("AI service unavailable")
+	}
+
+	// Engine succeeded — persist the trip as "planned"
+	trip := &models.Trip{
+		UserID:         userID,
+		Title:          title,
+		StartDate:      startDate,
+		EndDate:        endDate,
+		TravelersCount: input.TravelersCount,
+		Preferences:    input.Preferences,
+		Status:         "planned",
+	}
+
+	if err := s.tripRepo.Create(trip); err != nil {
+		return nil, errors.New("failed to create trip")
 	}
 
 	// Save the AI-generated multi-city itinerary
 	if err := s.saveItinerary(trip.ID, startDate, aiResp); err != nil {
 		log.Printf("Failed to save itinerary for trip %s: %v", trip.ID, err)
-		return s.tripRepo.FindByID(trip.ID)
+		// Roll back the parent trip so we don't leave a planned trip with no plan.
+		_ = s.tripRepo.Delete(trip.ID)
+		return nil, errors.New("failed to save itinerary")
 	}
-
-	// Update trip status to planned
-	trip.Status = "planned"
-	_ = s.tripRepo.Update(trip)
 
 	return s.tripRepo.FindByID(trip.ID)
 }
@@ -189,6 +268,7 @@ func (s *TripService) saveItinerary(tripID uuid.UUID, startDate time.Time, aiRes
 			City:          aiDest.City,
 			DaysAllocated: aiDest.Days,
 			Category:      aiDest.Category,
+			TravelHours:   aiDest.TravelHours,
 			OrderInTrip:   destIdx + 1,
 		}
 
@@ -209,6 +289,7 @@ func (s *TripService) saveItinerary(tripID uuid.UUID, startDate time.Time, aiRes
 				DayNumber:         aiDay.DayNumber,
 				Date:              dayDate,
 				HoursUsed:         aiDay.HoursUsed,
+				FreeHours:         aiDay.FreeHours,
 			}
 
 			if err := txRepo.CreateTripDays([]models.TripDay{tripDay}); err != nil {
@@ -217,26 +298,38 @@ func (s *TripService) saveItinerary(tripID uuid.UUID, startDate time.Time, aiRes
 			}
 
 			var activities []models.TripActivity
+			// Activities are scheduled sequentially starting at 09:00, chaining
+			// each activity by its duration so the frontend has a real timeline.
+			clockHour := dayStartHour
 			for i, aiAct := range aiDay.Activities {
 				// Validate that the AI-generated place ID actually exists in our DB
 				var validPlaceID *uint
 				if aiAct.PlaceID > 0 {
-					if _, err := s.placeRepo.FindByID(aiAct.PlaceID); err == nil {
+					if err := txRepo.DB().Where("id = ?", aiAct.PlaceID).First(&models.Place{}).Error; err == nil {
 						pid := aiAct.PlaceID
 						validPlaceID = &pid
 					} else {
 						log.Printf("AI returned non-existent place_id %d for activity %q, skipping FK link", aiAct.PlaceID, aiAct.Name)
 					}
 				}
+
+				startTime := formatHour(clockHour)
+				clockHour += aiAct.DurationHours
+				endTime := formatHour(clockHour)
+
 				activity := models.TripActivity{
 					TripDayID:     tripDay.ID,
 					PlaceID:       validPlaceID,
 					ActivityName:  aiAct.Name,
+					Description:   aiAct.Description,
 					Category:      aiAct.Category,
 					DurationHours: aiAct.DurationHours,
+					StartTime:     startTime,
+					EndTime:       endTime,
 					Rating:        aiAct.Rating,
 					OrderInDay:    i + 1,
 					ActivityType:  aiAct.Category,
+					MatchScore:    aiAct.MatchScore,
 				}
 				activities = append(activities, activity)
 			}

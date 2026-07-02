@@ -66,31 +66,32 @@ type RecommendRequest struct {
 
 // waynxItineraryRequest is the body sent to POST /itinerary
 type waynxItineraryRequest struct {
-	User RecommendRequest `json:"user"`
+	User  RecommendRequest `json:"user"`
+	PoolN int              `json:"pool_n"`
 }
 
 // waynxItineraryResponse is the full JSON returned by POST /itinerary
 type waynxItineraryResponse struct {
-	Status    string              `json:"status"`
-	TotalDays int                 `json:"total_days"`
-	Itinerary []waynxDestination  `json:"itinerary"`
-	Summary   waynxSummary        `json:"summary"`
+	Status    string             `json:"status"`
+	TotalDays int                `json:"total_days"`
+	Itinerary []waynxDestination `json:"itinerary"`
+	Summary   waynxSummary       `json:"summary"`
 }
 
 type waynxDestination struct {
-	DestinationIndex        int             `json:"destination_index"`
-	City                    string          `json:"city"`
-	CategoryFocus           string          `json:"category_focus"`
-	DaysAllocated           int             `json:"days_allocated"`
-	TravelHoursFromPrevious float64         `json:"travel_hours_from_previous"`
-	DayPlan                 []waynxDayPlan  `json:"day_plan"`
+	DestinationIndex        int            `json:"destination_index"`
+	City                    string         `json:"city"`
+	CategoryFocus           string         `json:"category_focus"`
+	DaysAllocated           int            `json:"days_allocated"`
+	TravelHoursFromPrevious float64        `json:"travel_hours_from_previous"`
+	DayPlan                 []waynxDayPlan `json:"day_plan"`
 }
 
 type waynxDayPlan struct {
-	Day        int              `json:"day"`
-	Activities []waynxActivity  `json:"activities"`
-	HoursUsed  int              `json:"hours_used"`
-	FreeHours  int              `json:"free_hours"`
+	Day        int             `json:"day"`
+	Activities []waynxActivity `json:"activities"`
+	HoursUsed  int             `json:"hours_used"`
+	FreeHours  int             `json:"free_hours"`
 }
 
 type waynxActivity struct {
@@ -140,12 +141,14 @@ type AIDestination struct {
 	City          string      `json:"city"`
 	Days          int         `json:"days"`
 	Category      string      `json:"category"`
+	TravelHours   float64     `json:"travel_hours"`
 	DailySchedule []AIPlanDay `json:"daily_schedule"`
 }
 
 type AIPlanDay struct {
 	DayNumber  int              `json:"day_number"`
 	HoursUsed  int              `json:"hours_used"`
+	FreeHours  int              `json:"free_hours"`
 	Activities []AIPlanActivity `json:"activities"`
 }
 
@@ -155,6 +158,8 @@ type AIPlanActivity struct {
 	Category      string  `json:"category"`
 	DurationHours int     `json:"duration_hours"`
 	Rating        float64 `json:"rating"`
+	Description   string  `json:"description"`
+	MatchScore    float64 `json:"match_score"`
 }
 
 // ─── Chat / Ask WAYNX Types ─────────────────────────────────────────────────
@@ -165,7 +170,7 @@ type ChatRequest struct {
 }
 
 type ChatHistory struct {
-	Role    string `json:"role"`    // "user" or "assistant"
+	Role    string `json:"role"` // "user" or "assistant"
 	Content string `json:"content"`
 }
 
@@ -185,8 +190,9 @@ func (c *AIClient) GetRecommendation(req RecommendRequest) (*RecommendResponse, 
 		return nil, fmt.Errorf("WAYNX API URL is not configured")
 	}
 
-	// Build the request body that the WAYNX API expects: { "user": { ... } }
-	body := waynxItineraryRequest{User: req}
+	// Build the request body that the WAYNX API expects: { "user": { ... }, "pool_n": 60 }
+	// pool_n is the recommendation pool size the engine clusters over (matches the demo's slice(0,60)).
+	body := waynxItineraryRequest{User: req, PoolN: 60}
 	jsonBody, err := json.Marshal(body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal WAYNX request: %w", err)
@@ -258,6 +264,7 @@ func (c *AIClient) convertWAYNXResponse(waynx *waynxItineraryResponse) *Recommen
 			City:          dest.City,
 			Days:          dest.DaysAllocated,
 			Category:      dest.CategoryFocus,
+			TravelHours:   dest.TravelHoursFromPrevious,
 			DailySchedule: make([]AIPlanDay, 0, len(dest.DayPlan)),
 		}
 
@@ -265,6 +272,7 @@ func (c *AIClient) convertWAYNXResponse(waynx *waynxItineraryResponse) *Recommen
 			aiDay := AIPlanDay{
 				DayNumber:  day.Day,
 				HoursUsed:  day.HoursUsed,
+				FreeHours:  day.FreeHours,
 				Activities: make([]AIPlanActivity, 0, len(day.Activities)),
 			}
 
@@ -275,6 +283,8 @@ func (c *AIClient) convertWAYNXResponse(waynx *waynxItineraryResponse) *Recommen
 					Category:      act.Category,
 					DurationHours: act.Hours,
 					Rating:        act.Rating,
+					Description:   act.Description,
+					MatchScore:    act.MatchPct,
 				})
 
 				// Also collect unique places into the recommendations list

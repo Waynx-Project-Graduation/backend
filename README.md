@@ -1,3 +1,13 @@
+---
+title: Waynex
+emoji: 🚀
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 <div align="center">
   <h1>WAYNX AI Trip Planner — Backend API</h1>
   <p><strong>An intelligent, high-performance Go backend that uses Google Gemini to instantly generate perfectly validated, multi-city travel itineraries.</strong></p>
