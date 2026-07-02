@@ -53,7 +53,10 @@ func TestTripService_CreateTrip(t *testing.T) {
 		Preferences: models.Preferences{
 			Interests:       []string{"history"},
 			TravelCompanion: "friends",
-			Budget:          "moderate",
+			Budget:          "medium",
+			AgeGroup:        "adult",
+			CrowdPreference: "no_preference",
+			Season:          "winter",
 		},
 	}
 

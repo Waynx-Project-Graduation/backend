@@ -22,7 +22,7 @@ type Trip struct {
 	UpdatedAt      time.Time      `json:"updated_at"`
 
 	// Relations
-	User         User              `gorm:"foreignKey:UserID" json:"user,omitempty"`
+	User         *User             `gorm:"foreignKey:UserID" json:"user,omitempty"`
 	Destinations []TripDestination `gorm:"foreignKey:TripID;constraint:OnDelete:CASCADE;" json:"destinations,omitempty"`
 	Expenses     []TripExpense     `gorm:"foreignKey:TripID;constraint:OnDelete:CASCADE;" json:"expenses,omitempty"`
 	Members      []TripMember      `gorm:"foreignKey:TripID;constraint:OnDelete:CASCADE;" json:"members,omitempty"`
@@ -48,9 +48,10 @@ type TripDestination struct {
 	DaysAllocated int       `gorm:"not null" json:"days_allocated"`
 	Category      string    `gorm:"type:text" json:"category"` // dominant category for this city
 	OrderInTrip   int       `gorm:"default:0" json:"order_in_trip"`
+	TravelHours   float64   `gorm:"default:0" json:"travel_hours"`
 
 	// Relations
-	Trip     Trip      `gorm:"foreignKey:TripID" json:"trip,omitempty"`
+	Trip     *Trip      `gorm:"foreignKey:TripID" json:"trip,omitempty"`
 	TripDays []TripDay `gorm:"foreignKey:TripDestinationID;constraint:OnDelete:CASCADE" json:"trip_days,omitempty"`
 }
 
@@ -73,10 +74,11 @@ type TripDay struct {
 	DayNumber           int       `gorm:"not null" json:"day_number"`
 	Date                time.Time `gorm:"not null" json:"date"`
 	HoursUsed           int       `gorm:"default:0" json:"hours_used"`
+	FreeHours           int       `gorm:"default:0" json:"free_hours"`
 
 	// Relations
-	Trip            Trip            `gorm:"foreignKey:TripID" json:"trip,omitempty"`
-	TripDestination TripDestination `gorm:"foreignKey:TripDestinationID" json:"trip_destination,omitempty"`
+	Trip            *Trip            `gorm:"foreignKey:TripID" json:"trip,omitempty"`
+	TripDestination *TripDestination `gorm:"foreignKey:TripDestinationID" json:"trip_destination,omitempty"`
 	Activities      []TripActivity  `gorm:"foreignKey:TripDayID;constraint:OnDelete:CASCADE" json:"activities,omitempty"`
 }
 
@@ -106,9 +108,10 @@ type TripActivity struct {
 	Rating        float64   `gorm:"default:0" json:"rating"`
 	OrderInDay    int       `gorm:"default:0" json:"order_in_day"`
 	ActivityType  string    `gorm:"type:text" json:"activity_type"`
+	MatchScore    float64   `gorm:"default:0" json:"match_score"`
 
 	// Relations
-	TripDay TripDay `gorm:"foreignKey:TripDayID" json:"trip_day,omitempty"`
+	TripDay *TripDay `gorm:"foreignKey:TripDayID" json:"trip_day,omitempty"`
 	Place   *Place  `gorm:"foreignKey:PlaceID" json:"place,omitempty"`
 }
 

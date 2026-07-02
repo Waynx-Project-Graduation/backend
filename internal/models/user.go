@@ -53,7 +53,7 @@ type Preferences struct {
 	TravelCompanion string   `json:"travel_companion,omitempty"` // solo / couple / family / friends
 	Budget          string   `json:"budget,omitempty"`           // low / medium / high
 	AgeGroup        string   `json:"age_group,omitempty"`        // teen / adult / senior
-	CrowdPreference string   `json:"crowd_preference,omitempty"` // crowded / quiet / no_preference
+	CrowdPreference string   `json:"crowd_preference,omitempty"` // quiet / moderate / no_preference / crowded
 	Season          string   `json:"season,omitempty"`           // winter / spring / summer / autumn
 }
 
