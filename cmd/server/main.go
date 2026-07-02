@@ -83,15 +83,14 @@ func main() {
 	// ── Router Setup ──────────────────────────────────────────────────
 	r := gin.Default()
 
-	// Global middleware
+// Global middleware
 	r.Use(middleware.ErrorHandler())
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
+		AllowOrigins:     []string{"http://localhost:3000"}, 
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-		AllowCredentials: false, // wildcard origin does not allow credentials
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization", "Accept"}, 
+		AllowCredentials: true, 
 	}))
-
 	// Health check
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{"status": "ok", "service": "trip-planner-api"})
