@@ -31,6 +31,7 @@ pinned: false
 * **Expense Tracking:** Track itemized expenses per trip with currency and category support.
 * **Place Reviews:** Community-driven 1-5 star ratings and written reviews on locations.
 * **Real-time Notifications:** In-app notification system with unread counts.
+* **Personalized AI Chat Assistant:** A conversational WAYNX assistant that knows each user — it injects their profile, saved places and past-trip history as context, grounds answers in real database places (trustworthy `is_verified`), streams responses token-by-token over SSE, and is rate-limited per user.
 
 ---
 
@@ -261,13 +262,137 @@ Base URL: `/api`
 
 ### Chat — WAYNX AI Assistant (Protected)
 
+A personalized, retrieval-grounded conversational assistant. Every message is
+enriched with the user's profile, preferences and travel history (injected as an
+invisible system instruction) and grounded in real places from the database, so
+recommendations are factual and tailored.
+
+#### What this chatbot can do (Capabilities)
+
+**1. Personalized answers ("it knows who it's talking to")**
+On every message the backend silently builds a fresh profile of the logged-in
+user and feeds it to the AI as a hidden system instruction (never shown in the
+chat). This includes:
+- **Identity & location:** name, home city (so it factors in travel distance), age group.
+- **Travel preferences:** interests, budget level, usual travel companion, crowd preference, preferred season.
+- **Behavioral history:** the cities they've recently traveled to (to suggest fresh experiences, not repeats) and the places they've bookmarked (a signal of taste).
+- **Time awareness:** the current season, for season-appropriate suggestions.
+> Result: replies feel tailored ("Since you're in Cairo and love history…") instead of generic.
+
+**2. Factually grounded, anti-hallucination answers**
+Before calling the AI, the backend searches the real places database for rows
+relevant to the user's question and injects them as verified context. The AI is
+instructed to recommend **only real places** and to be honest when unsure.
+- The `is_verified` flag is set to `true` **only** when the answer is backed by real
+  database records — it is never self-reported by the model, so the frontend can
+  trust it (e.g. show a "verified" badge).
+
+**3. Rich, actionable place references**
+When the assistant mentions specific locations it returns them in
+`related_places` as **fully hydrated objects** (id, name, city, category, rating,
+thumbnail) — not bare IDs. The frontend can render clickable place cards directly
+from the response and deep-link into the Places feature. Invalid/hallucinated IDs
+are automatically dropped.
+
+**4. Real-time streaming (typewriter effect)**
+`POST /chat/stream` streams the answer token-by-token over Server-Sent Events
+(SSE), so the UI shows text as it's generated instead of waiting for the full
+reply. Falls back gracefully on errors.
+
+**5. Multi-turn conversation memory**
+Messages are grouped into **sessions**. The assistant remembers earlier turns in
+the same session for coherent follow-ups. To keep it fast and cost-efficient, it
+uses a **sliding context window** (the most recent ~20 messages) rather than
+resending the entire history.
+
+**6. Automatic & manual session titles**
+A new conversation is auto-titled from the first message (and refined by an
+AI-suggested title). Once a user manually renames a session, the AI stops
+overwriting it (tracked via `title_auto_generated`). Active sessions bubble to the
+top of the history list (sorted by last activity).
+
+**7. Full session management (CRUD)**
+Users can list their chat history, open any past session (with paginated
+messages), rename sessions, and delete them. All operations are strictly
+ownership-checked — a user can only ever access their own sessions.
+
+**8. Bilingual-safe**
+Titles and messages are handled with UTF-8-safe truncation, so Arabic (and any
+multibyte) content is never corrupted.
+
+**9. Cost & abuse protection**
+- **Per-user rate limiting:** 20 messages/minute (with a small burst), returning `429` when exceeded — protects the Gemini API bill from runaway usage.
+- **Cancellation-aware:** if the client disconnects, the in-flight AI request is cancelled instead of running (and billing) to completion.
+- **Resilient:** if the AI service fails, the user gets a friendly fallback message instead of a hard error, and the conversation is preserved.
+
+**10. Security & privacy**
+- All endpoints require JWT authentication.
+- User context is assembled server-side and injected as a protected system
+  instruction; the model is instructed to ignore any attempt inside a user's
+  message to override its rules (prompt-injection resistance).
+- Sessions are scoped and isolated per user.
+
+**11. Focused domain (guardrailed)**
+The assistant is constrained to Egypt travel topics — places, trips, culture,
+food, logistics, and safety — and politely declines unrelated or off-topic
+requests.
+
+#### Endpoints
+
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/chat` | Send message, get AI response |
-| GET | `/chat/history` | List chat sessions |
-| GET | `/chat/:id` | Get session with messages |
+| POST | `/chat` | Send message, get a full AI response |
+| POST | `/chat/stream` | Send message, stream the AI response token-by-token (SSE) |
+| GET | `/chat/history` | List chat sessions (paginated) |
+| GET | `/chat/:id` | Get a session with its messages (paginated) |
 | PUT | `/chat/:id` | Rename a chat session |
 | DELETE | `/chat/:id` | Delete a chat session |
+
+**Rate limiting:** `POST /chat` and `POST /chat/stream` are limited to **20
+messages/minute per user** (small burst allowed) to bound AI cost. Exceeding
+the limit returns `429 TOO_MANY_REQUESTS`.
+
+**`POST /chat` request body:**
+```json
+{
+  "session_id": "uuid-or-null",   // omit / null to start a new conversation
+  "message": "Best 3 spots in Aswan for a history lover?"
+}
+```
+
+**`POST /chat` response:**
+```json
+{
+  "success": true,
+  "data": {
+    "session_id": "…",
+    "user_message": { "id": "…", "role": "user", "content": "…" },
+    "ai_response": {
+      "id": "…",
+      "role": "assistant",
+      "content": "…",
+      "is_verified": true,
+      "related_places": [
+        { "id": 12, "name": "Philae Temple", "city": "Aswan",
+          "category": "history", "rating": 4.8, "thumbnail_url": "…" }
+      ]
+    }
+  }
+}
+```
+
+- **`is_verified`** is `true` only when the answer is grounded in real place
+  records that exist in the database (never self-reported by the model).
+- **`related_places`** are hydrated into full place objects (name, city, rating,
+  thumbnail) — unresolved IDs are dropped.
+
+**`POST /chat/stream`** returns `text/event-stream` with three event types:
+- `chunk` — `{ "text": "partial answer…" }` (many, in order)
+- `done`  — `{ "session_id": "…", "message_id": "…" }` (once, at the end)
+- `error` — `{ "message": "…" }` (on failure)
+
+**Query params for `GET /chat/history` and `GET /chat/:id`:** `page`, `per_page`.
+`GET /chat/:id` returns `{ session, messages }` with pagination `meta`.
 
 ### Notifications (Protected)
 

@@ -81,3 +81,17 @@ func (r *UserRepository) UpdateExplorerPoints(userID uuid.UUID, points int) erro
 func (r *UserRepository) SoftDelete(userID uuid.UUID) error {
 	return r.db.Where("id = ?", userID).Delete(&models.User{}).Error
 }
+
+// RecentTripCities returns the distinct cities the user has recently traveled to,
+// most-recent first, capped at `limit`. Used to personalize the chat assistant.
+func (r *UserRepository) RecentTripCities(userID uuid.UUID, limit int) ([]string, error) {
+	var cities []string
+	err := r.db.Model(&models.TripDestination{}).
+		Joins("JOIN trips ON trips.id = trip_destinations.trip_id AND trips.user_id = ?", userID).
+		Where("trips.deleted_at IS NULL").
+		Group("trip_destinations.city").
+		Order("MAX(trips.created_at) DESC").
+		Limit(limit).
+		Pluck("trip_destinations.city", &cities).Error
+	return cities, err
+}

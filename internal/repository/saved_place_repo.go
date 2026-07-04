@@ -62,3 +62,16 @@ func (r *SavedPlaceRepository) CountByUserID(userID uuid.UUID) (int64, error) {
 	err := r.db.Model(&models.SavedPlace{}).Where("user_id = ?", userID).Count(&count).Error
 	return count, err
 }
+
+// RecentSavedPlaceNames returns the names of the user's most recently saved
+// places, capped at `limit`. Used to personalize the chat assistant.
+func (r *SavedPlaceRepository) RecentSavedPlaceNames(userID uuid.UUID, limit int) ([]string, error) {
+	var names []string
+	err := r.db.Model(&models.SavedPlace{}).
+		Joins("JOIN places ON places.id = saved_places.place_id").
+		Where("saved_places.user_id = ?", userID).
+		Order("saved_places.created_at DESC").
+		Limit(limit).
+		Pluck("places.name", &names).Error
+	return names, err
+}

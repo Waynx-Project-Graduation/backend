@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"encoding/json"
+	"fmt"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -27,7 +29,7 @@ func (h *ChatHandler) SendMessage(c *gin.Context) {
 		return
 	}
 
-	resp, err := h.chatService.SendMessage(userID, input)
+	resp, err := h.chatService.SendMessage(c.Request.Context(), userID, input)
 	if err != nil {
 		if err.Error() == "access denied" {
 			utils.Forbidden(c, "you don't have access to this chat session")
@@ -38,6 +40,50 @@ func (h *ChatHandler) SendMessage(c *gin.Context) {
 	}
 
 	utils.Created(c, resp)
+}
+
+// POST /api/chat/stream — Send a message and stream the AI response via SSE.
+func (h *ChatHandler) StreamMessage(c *gin.Context) {
+	userID := getUserID(c)
+
+	var input services.SendMessageInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		utils.BadRequest(c, err.Error())
+		return
+	}
+
+	// SSE headers.
+	c.Writer.Header().Set("Content-Type", "text/event-stream")
+	c.Writer.Header().Set("Cache-Control", "no-cache")
+	c.Writer.Header().Set("Connection", "keep-alive")
+	c.Writer.Header().Set("X-Accel-Buffering", "no")
+
+	flusher, ok := c.Writer.(interface{ Flush() })
+	if !ok {
+		utils.InternalError(c, "streaming unsupported")
+		return
+	}
+
+	writeEvent := func(event, data string) {
+		fmt.Fprintf(c.Writer, "event: %s\ndata: %s\n\n", event, data)
+		flusher.Flush()
+	}
+
+	resp, err := h.chatService.StreamMessage(c.Request.Context(), userID, input, func(chunk string) {
+		b, _ := json.Marshal(gin.H{"text": chunk})
+		writeEvent("chunk", string(b))
+	})
+	if err != nil {
+		b, _ := json.Marshal(gin.H{"message": err.Error()})
+		writeEvent("error", string(b))
+		return
+	}
+
+	done, _ := json.Marshal(gin.H{
+		"session_id": resp.SessionID,
+		"message_id": resp.AIResponse.ID,
+	})
+	writeEvent("done", string(done))
 }
 
 // GET /api/chat/history — List chat sessions
@@ -68,7 +114,10 @@ func (h *ChatHandler) GetSession(c *gin.Context) {
 		return
 	}
 
-	session, err := h.chatService.GetSession(sessionID, userID)
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	perPage, _ := strconv.Atoi(c.DefaultQuery("per_page", "50"))
+
+	session, messages, total, err := h.chatService.GetSession(sessionID, userID, page, perPage)
 	if err != nil {
 		if err.Error() == "access denied" {
 			utils.Forbidden(c, "you don't have access to this chat session")
@@ -78,7 +127,10 @@ func (h *ChatHandler) GetSession(c *gin.Context) {
 		return
 	}
 
-	utils.Success(c, session)
+	utils.SuccessWithMeta(c, gin.H{
+		"session":  session,
+		"messages": messages,
+	}, &utils.Meta{Page: page, PerPage: perPage, Total: total})
 }
 
 // PUT /api/chat/:id — Rename a chat session

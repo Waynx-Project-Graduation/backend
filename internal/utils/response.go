@@ -112,6 +112,17 @@ func InternalError(c *gin.Context, message string) {
 	})
 }
 
+// TooManyRequests sends a 429 error
+func TooManyRequests(c *gin.Context, message string) {
+	c.JSON(http.StatusTooManyRequests, Response{
+		Success: false,
+		Error: &ErrorBody{
+			Code:    "TOO_MANY_REQUESTS",
+			Message: message,
+		},
+	})
+}
+
 // ServiceUnavailable sends a 503 error
 func ServiceUnavailable(c *gin.Context, message string) {
 	c.JSON(http.StatusServiceUnavailable, Response{

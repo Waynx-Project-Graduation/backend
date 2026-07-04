@@ -4,14 +4,17 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/google/generative-ai-go/genai"
+	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
 
@@ -33,6 +36,13 @@ type AIClient struct {
 	waynxBaseURL   string // e.g. "https://waynx-api-production.up.railway.app"
 	timeoutSeconds int
 	httpClient     *http.Client
+
+	// gemini is a lazily-initialized, shared Gemini client. Creating a client is
+	// expensive (auth + TLS setup) so we build it once and reuse it across
+	// requests instead of per-message.
+	geminiOnce sync.Once
+	gemini     *genai.Client
+	geminiErr  error
 }
 
 func NewAIClient(geminiAPIKey, waynxBaseURL string, timeoutSeconds int) *AIClient {
@@ -46,6 +56,26 @@ func NewAIClient(geminiAPIKey, waynxBaseURL string, timeoutSeconds int) *AIClien
 		httpClient: &http.Client{
 			Timeout: time.Duration(timeoutSeconds) * time.Second,
 		},
+	}
+}
+
+// geminiClient returns the shared Gemini client, creating it on first use.
+func (c *AIClient) geminiClient() (*genai.Client, error) {
+	c.geminiOnce.Do(func() {
+		if c.geminiAPIKey == "" {
+			c.geminiErr = errors.New("Gemini API key is not configured")
+			return
+		}
+		// The client is long-lived; use a background context for its lifetime.
+		c.gemini, c.geminiErr = genai.NewClient(context.Background(), option.WithAPIKey(c.geminiAPIKey))
+	})
+	return c.gemini, c.geminiErr
+}
+
+// Close releases the shared Gemini client. Call on server shutdown.
+func (c *AIClient) Close() {
+	if c.gemini != nil {
+		_ = c.gemini.Close()
 	}
 }
 
@@ -167,6 +197,12 @@ type AIPlanActivity struct {
 type ChatRequest struct {
 	Message string        `json:"message"`
 	History []ChatHistory `json:"history,omitempty"`
+	// SystemInstruction carries the personalized user context and behavioral
+	// guardrails. Injected as Gemini's SystemInstruction (invisible to the user).
+	SystemInstruction string `json:"-"`
+	// Grounding is optional retrieval context (real places from the DB) that the
+	// model must ground its answer in. Enables trustworthy is_verified.
+	Grounding string `json:"-"`
 }
 
 type ChatHistory struct {
@@ -179,6 +215,65 @@ type ChatResponse struct {
 	IsVerified     bool     `json:"is_verified"`
 	RelatedPlaces  []string `json:"related_places,omitempty"`
 	SuggestedTitle string   `json:"suggested_title,omitempty"`
+}
+
+// chatModelName is the Gemini model used for the conversational assistant.
+const chatModelName = "gemini-2.5-flash"
+
+// buildChatModel constructs a configured Gemini model for chat, applying the
+// system instruction (personalization + guardrails) when provided.
+func (c *AIClient) buildChatModel(client *genai.Client, systemInstruction string) *genai.GenerativeModel {
+	model := client.GenerativeModel(chatModelName)
+	model.ResponseMIMEType = "application/json"
+	if systemInstruction != "" {
+		model.SystemInstruction = &genai.Content{
+			Parts: []genai.Part{genai.Text(systemInstruction)},
+		}
+	}
+	return model
+}
+
+// buildChatSession seeds a chat session with prior conversation history.
+func buildChatSession(model *genai.GenerativeModel, history []ChatHistory) *genai.ChatSession {
+	cs := model.StartChat()
+	for _, msg := range history {
+		role := msg.Role
+		switch role {
+		case "assistant", "model":
+			role = "model"
+		case "user":
+			role = "user"
+		default:
+			continue
+		}
+		cs.History = append(cs.History, &genai.Content{
+			Role:  role,
+			Parts: []genai.Part{genai.Text(msg.Content)},
+		})
+	}
+	return cs
+}
+
+// buildChatPrompt assembles the per-message prompt, embedding optional grounding.
+func buildChatPrompt(message, grounding string) string {
+	var b strings.Builder
+	if grounding != "" {
+		b.WriteString("Use ONLY the following verified places from our database when recommending specific locations. ")
+		b.WriteString("If you cite any of these, include its numeric ID in related_places and you may set is_verified=true. ")
+		b.WriteString("If the answer relies on facts NOT in this list, set is_verified=false.\n")
+		b.WriteString("--- VERIFIED PLACES ---\n")
+		b.WriteString(grounding)
+		b.WriteString("\n--- END ---\n\n")
+	}
+	b.WriteString(fmt.Sprintf("User message: %q\n\n", message))
+	b.WriteString(`Reply ONLY with a valid JSON object matching this structure:
+{
+  "answer": (string, your detailed, personalized response),
+  "is_verified": (boolean, true ONLY if grounded in the verified places above or widely-known undisputed facts),
+  "related_places": (array of numeric place ID strings from the verified list, e.g. ["1","5"]),
+  "suggested_title": (string, a short 3-4 word title summarizing this conversation)
+}`)
+	return b.String()
 }
 
 // ─── Trip Recommendation (calls WAYNX /itinerary) ───────────────────────────
@@ -314,50 +409,21 @@ func (c *AIClient) convertWAYNXResponse(waynx *waynxItineraryResponse) *Recommen
 
 // ─── Chat / Ask WAYNX (still uses Gemini) ───────────────────────────────────
 
-// AskQuestion sends a chat message to Gemini and gets a conversational response
-func (c *AIClient) AskQuestion(req ChatRequest) (*ChatResponse, error) {
-	if c.geminiAPIKey == "" {
-		return nil, fmt.Errorf("Gemini API key is not configured")
+// AskQuestion sends a chat message to Gemini and gets a structured conversational
+// response. The caller's context is honored so a client disconnect cancels the
+// upstream request.
+func (c *AIClient) AskQuestion(ctx context.Context, req ChatRequest) (*ChatResponse, error) {
+	client, err := c.geminiClient()
+	if err != nil {
+		return nil, err
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(c.timeoutSeconds)*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(c.timeoutSeconds)*time.Second)
 	defer cancel()
 
-	client, err := genai.NewClient(ctx, option.WithAPIKey(c.geminiAPIKey))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create gemini client: %w", err)
-	}
-	defer client.Close()
-
-	model := client.GenerativeModel("gemini-2.5-flash")
-	model.ResponseMIMEType = "application/json"
-
-	cs := model.StartChat()
-
-	// Pre-fill history
-	for _, msg := range req.History {
-		if msg.Role == "user" || msg.Role == "model" || msg.Role == "assistant" {
-			role := msg.Role
-			if role == "assistant" {
-				role = "model"
-			}
-			cs.History = append(cs.History, &genai.Content{
-				Role:  role,
-				Parts: []genai.Part{genai.Text(msg.Content)},
-			})
-		}
-	}
-
-	prompt := fmt.Sprintf(`You are WAYNX, an expert AI travel planner for Egypt.
-The user is asking: "%s"
-
-Reply ONLY with a valid JSON object matching this structure:
-{
-  "answer": (string, your detailed response to the user),
-  "is_verified": (boolean, true if the information is factually verified),
-  "related_places": (array of strings, optional place IDs related to the answer, e.g. ["1", "5"]),
-  "suggested_title": (string, a short 3-4 word title summarizing this entire conversation, optional)
-}`, req.Message)
+	model := c.buildChatModel(client, req.SystemInstruction)
+	cs := buildChatSession(model, req.History)
+	prompt := buildChatPrompt(req.Message, req.Grounding)
 
 	resp, err := cs.SendMessage(ctx, genai.Text(prompt))
 	if err != nil {
@@ -382,4 +448,68 @@ Reply ONLY with a valid JSON object matching this structure:
 	}
 
 	return &result, nil
+}
+
+// StreamChunk is a single streamed token/segment emitted during a streaming chat.
+type StreamChunk struct {
+	Text string
+	Err  error
+}
+
+// AskQuestionStream streams the assistant's answer token-by-token. It uses plain
+// text (not JSON mode) so chunks are human-readable as they arrive. The full
+// concatenated answer is returned via onComplete once the stream ends, allowing
+// the caller to persist it. Cancellation via ctx stops the upstream call.
+func (c *AIClient) AskQuestionStream(ctx context.Context, req ChatRequest, emit func(StreamChunk)) (string, error) {
+	client, err := c.geminiClient()
+	if err != nil {
+		return "", err
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(c.timeoutSeconds)*time.Second)
+	defer cancel()
+
+	// For streaming we produce natural language (no JSON envelope).
+	model := client.GenerativeModel(chatModelName)
+	if req.SystemInstruction != "" {
+		model.SystemInstruction = &genai.Content{
+			Parts: []genai.Part{genai.Text(req.SystemInstruction)},
+		}
+	}
+
+	cs := buildChatSession(model, req.History)
+
+	var prompt strings.Builder
+	if req.Grounding != "" {
+		prompt.WriteString("Ground your answer in these verified places when recommending specific locations:\n")
+		prompt.WriteString(req.Grounding)
+		prompt.WriteString("\n\n")
+	}
+	prompt.WriteString(req.Message)
+
+	iter := cs.SendMessageStream(ctx, genai.Text(prompt.String()))
+
+	var full strings.Builder
+	for {
+		resp, err := iter.Next()
+		if errors.Is(err, iterator.Done) {
+			break
+		}
+		if err != nil {
+			emit(StreamChunk{Err: err})
+			return full.String(), fmt.Errorf("gemini stream error: %w", err)
+		}
+		if len(resp.Candidates) == 0 || resp.Candidates[0].Content == nil {
+			continue
+		}
+		for _, part := range resp.Candidates[0].Content.Parts {
+			if txt, ok := part.(genai.Text); ok {
+				chunk := string(txt)
+				full.WriteString(chunk)
+				emit(StreamChunk{Text: chunk})
+			}
+		}
+	}
+
+	return full.String(), nil
 }

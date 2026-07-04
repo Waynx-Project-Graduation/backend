@@ -1,0 +1,450 @@
+2026/07/04 06:54:01 Database connected successfully (SQLite)
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.028ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type='table' AND name="users"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.075ms] [34;1m[rows:3][0m SELECT sql FROM sqlite_master WHERE type IN ("table","index") AND tbl_name = "users" AND sql IS NOT NULL order by type = "table" desc
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.027ms] [34;1m[rows:-][0m SELECT * FROM `users` LIMIT 1
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.027ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "index" AND tbl_name = "users" AND name = "idx_users_email"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.022ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "index" AND tbl_name = "users" AND name = "idx_users_deleted_at"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.023ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type='table' AND name="places"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.232ms] [34;1m[rows:3][0m SELECT sql FROM sqlite_master WHERE type IN ("table","index") AND tbl_name = "places" AND sql IS NOT NULL order by type = "table" desc
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.031ms] [34;1m[rows:-][0m SELECT * FROM `places` LIMIT 1
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.027ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "index" AND tbl_name = "places" AND name = "idx_places_city"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.023ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "index" AND tbl_name = "places" AND name = "idx_places_category"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.021ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type='table' AND name="trips"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.059ms] [34;1m[rows:3][0m SELECT sql FROM sqlite_master WHERE type IN ("table","index") AND tbl_name = "trips" AND sql IS NOT NULL order by type = "table" desc
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.026ms] [34;1m[rows:-][0m SELECT * FROM `trips` LIMIT 1
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.035ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "table" AND tbl_name = "trips" AND (sql LIKE "%CONSTRAINT ""fk_users_trips"" %" OR sql LIKE "%CONSTRAINT fk_users_trips %" OR sql LIKE "%CONSTRAINT `fk_users_trips`%" OR sql LIKE "%CONSTRAINT [fk_users_trips]%" OR sql LIKE "%CONSTRAINT 	fk_users_trips	%")
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.019ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "index" AND tbl_name = "trips" AND name = "idx_trips_user_id"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.019ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "index" AND tbl_name = "trips" AND name = "idx_trips_status"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.020ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type='table' AND name="trip_destinations"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.082ms] [34;1m[rows:2][0m SELECT sql FROM sqlite_master WHERE type IN ("table","index") AND tbl_name = "trip_destinations" AND sql IS NOT NULL order by type = "table" desc
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.021ms] [34;1m[rows:-][0m SELECT * FROM `trip_destinations` LIMIT 1
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.039ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "table" AND tbl_name = "trip_destinations" AND (sql LIKE "%CONSTRAINT ""fk_trips_destinations"" %" OR sql LIKE "%CONSTRAINT fk_trips_destinations %" OR sql LIKE "%CONSTRAINT `fk_trips_destinations`%" OR sql LIKE "%CONSTRAINT [fk_trips_destinations]%" OR sql LIKE "%CONSTRAINT 	fk_trips_destinations	%")
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.019ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "index" AND tbl_name = "trip_destinations" AND name = "idx_trip_destinations_trip_id"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.018ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type='table' AND name="trip_days"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.059ms] [34;1m[rows:3][0m SELECT sql FROM sqlite_master WHERE type IN ("table","index") AND tbl_name = "trip_days" AND sql IS NOT NULL order by type = "table" desc
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.020ms] [34;1m[rows:-][0m SELECT * FROM `trip_days` LIMIT 1
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.030ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "table" AND tbl_name = "trip_days" AND (sql LIKE "%CONSTRAINT ""fk_trip_days_trip"" %" OR sql LIKE "%CONSTRAINT fk_trip_days_trip %" OR sql LIKE "%CONSTRAINT `fk_trip_days_trip`%" OR sql LIKE "%CONSTRAINT [fk_trip_days_trip]%" OR sql LIKE "%CONSTRAINT 	fk_trip_days_trip	%")
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.034ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "table" AND tbl_name = "trip_days" AND (sql LIKE "%CONSTRAINT ""fk_trip_destinations_trip_days"" %" OR sql LIKE "%CONSTRAINT fk_trip_destinations_trip_days %" OR sql LIKE "%CONSTRAINT `fk_trip_destinations_trip_days`%" OR sql LIKE "%CONSTRAINT [fk_trip_destinations_trip_days]%" OR sql LIKE "%CONSTRAINT 	fk_trip_destinations_trip_days	%")
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.022ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "index" AND tbl_name = "trip_days" AND name = "idx_trip_days_trip_id"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.023ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "index" AND tbl_name = "trip_days" AND name = "idx_trip_days_trip_destination_id"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.020ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type='table' AND name="trip_activities"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.076ms] [34;1m[rows:3][0m SELECT sql FROM sqlite_master WHERE type IN ("table","index") AND tbl_name = "trip_activities" AND sql IS NOT NULL order by type = "table" desc
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.035ms] [34;1m[rows:-][0m SELECT * FROM `trip_activities` LIMIT 1
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.056ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "table" AND tbl_name = "trip_activities" AND (sql LIKE "%CONSTRAINT ""fk_trip_days_activities"" %" OR sql LIKE "%CONSTRAINT fk_trip_days_activities %" OR sql LIKE "%CONSTRAINT `fk_trip_days_activities`%" OR sql LIKE "%CONSTRAINT [fk_trip_days_activities]%" OR sql LIKE "%CONSTRAINT 	fk_trip_days_activities	%")
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.035ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "table" AND tbl_name = "trip_activities" AND (sql LIKE "%CONSTRAINT ""fk_places_trip_activities"" %" OR sql LIKE "%CONSTRAINT fk_places_trip_activities %" OR sql LIKE "%CONSTRAINT `fk_places_trip_activities`%" OR sql LIKE "%CONSTRAINT [fk_places_trip_activities]%" OR sql LIKE "%CONSTRAINT 	fk_places_trip_activities	%")
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.025ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "index" AND tbl_name = "trip_activities" AND name = "idx_trip_activities_trip_day_id"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.023ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "index" AND tbl_name = "trip_activities" AND name = "idx_trip_activities_place_id"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.020ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type='table' AND name="notifications"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.080ms] [34;1m[rows:2][0m SELECT sql FROM sqlite_master WHERE type IN ("table","index") AND tbl_name = "notifications" AND sql IS NOT NULL order by type = "table" desc
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.025ms] [34;1m[rows:-][0m SELECT * FROM `notifications` LIMIT 1
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.032ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "table" AND tbl_name = "notifications" AND (sql LIKE "%CONSTRAINT ""fk_users_notifications"" %" OR sql LIKE "%CONSTRAINT fk_users_notifications %" OR sql LIKE "%CONSTRAINT `fk_users_notifications`%" OR sql LIKE "%CONSTRAINT [fk_users_notifications]%" OR sql LIKE "%CONSTRAINT 	fk_users_notifications	%")
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.018ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "index" AND tbl_name = "notifications" AND name = "idx_notifications_user_id"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.017ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type='table' AND name="chat_sessions"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.058ms] [34;1m[rows:3][0m SELECT sql FROM sqlite_master WHERE type IN ("table","index") AND tbl_name = "chat_sessions" AND sql IS NOT NULL order by type = "table" desc
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.021ms] [34;1m[rows:-][0m SELECT * FROM `chat_sessions` LIMIT 1
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45 [33mSLOW SQL >= 200ms
+[0m[31;1m[347.346ms] [33m[rows:0][35m ALTER TABLE `chat_sessions` ADD `title_auto_generated` numeric DEFAULT true[0m
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.079ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "table" AND tbl_name = "chat_sessions" AND (sql LIKE "%CONSTRAINT ""fk_users_chat_sessions"" %" OR sql LIKE "%CONSTRAINT fk_users_chat_sessions %" OR sql LIKE "%CONSTRAINT `fk_users_chat_sessions`%" OR sql LIKE "%CONSTRAINT [fk_users_chat_sessions]%" OR sql LIKE "%CONSTRAINT 	fk_users_chat_sessions	%")
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.030ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "index" AND tbl_name = "chat_sessions" AND name = "idx_chat_sessions_user_id"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.029ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "index" AND tbl_name = "chat_sessions" AND name = "idx_chat_sessions_deleted_at"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.029ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type='table' AND name="chat_messages"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.100ms] [34;1m[rows:2][0m SELECT sql FROM sqlite_master WHERE type IN ("table","index") AND tbl_name = "chat_messages" AND sql IS NOT NULL order by type = "table" desc
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.035ms] [34;1m[rows:-][0m SELECT * FROM `chat_messages` LIMIT 1
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.082ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "table" AND tbl_name = "chat_messages" AND (sql LIKE "%CONSTRAINT ""fk_chat_sessions_messages"" %" OR sql LIKE "%CONSTRAINT fk_chat_sessions_messages %" OR sql LIKE "%CONSTRAINT `fk_chat_sessions_messages`%" OR sql LIKE "%CONSTRAINT [fk_chat_sessions_messages]%" OR sql LIKE "%CONSTRAINT 	fk_chat_sessions_messages	%")
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.027ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "index" AND tbl_name = "chat_messages" AND name = "idx_chat_messages_session_id"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.062ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type='table' AND name="saved_places"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.182ms] [34;1m[rows:4][0m SELECT sql FROM sqlite_master WHERE type IN ("table","index") AND tbl_name = "saved_places" AND sql IS NOT NULL order by type = "table" desc
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.058ms] [34;1m[rows:-][0m SELECT * FROM `saved_places` LIMIT 1
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.145ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "table" AND tbl_name = "saved_places" AND (sql LIKE "%CONSTRAINT ""fk_places_saved_by"" %" OR sql LIKE "%CONSTRAINT fk_places_saved_by %" OR sql LIKE "%CONSTRAINT `fk_places_saved_by`%" OR sql LIKE "%CONSTRAINT [fk_places_saved_by]%" OR sql LIKE "%CONSTRAINT 	fk_places_saved_by	%")
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.060ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "table" AND tbl_name = "saved_places" AND (sql LIKE "%CONSTRAINT ""fk_users_saved_places"" %" OR sql LIKE "%CONSTRAINT fk_users_saved_places %" OR sql LIKE "%CONSTRAINT `fk_users_saved_places`%" OR sql LIKE "%CONSTRAINT [fk_users_saved_places]%" OR sql LIKE "%CONSTRAINT 	fk_users_saved_places	%")
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.091ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "index" AND tbl_name = "saved_places" AND name = "idx_saved_places_user_id"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.038ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "index" AND tbl_name = "saved_places" AND name = "idx_user_place"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.033ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "index" AND tbl_name = "saved_places" AND name = "idx_saved_places_place_id"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.026ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type='table' AND name="place_reviews"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.192ms] [34;1m[rows:3][0m SELECT sql FROM sqlite_master WHERE type IN ("table","index") AND tbl_name = "place_reviews" AND sql IS NOT NULL order by type = "table" desc
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.064ms] [34;1m[rows:-][0m SELECT * FROM `place_reviews` LIMIT 1
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.080ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "table" AND tbl_name = "place_reviews" AND (sql LIKE "%CONSTRAINT ""fk_places_reviews"" %" OR sql LIKE "%CONSTRAINT fk_places_reviews %" OR sql LIKE "%CONSTRAINT `fk_places_reviews`%" OR sql LIKE "%CONSTRAINT [fk_places_reviews]%" OR sql LIKE "%CONSTRAINT 	fk_places_reviews	%")
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.053ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "table" AND tbl_name = "place_reviews" AND (sql LIKE "%CONSTRAINT ""fk_users_reviews"" %" OR sql LIKE "%CONSTRAINT fk_users_reviews %" OR sql LIKE "%CONSTRAINT `fk_users_reviews`%" OR sql LIKE "%CONSTRAINT [fk_users_reviews]%" OR sql LIKE "%CONSTRAINT 	fk_users_reviews	%")
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.032ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "index" AND tbl_name = "place_reviews" AND name = "idx_place_reviews_place_id"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.054ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "index" AND tbl_name = "place_reviews" AND name = "idx_place_reviews_user_id"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.050ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type='table' AND name="trip_expenses"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.255ms] [34;1m[rows:2][0m SELECT sql FROM sqlite_master WHERE type IN ("table","index") AND tbl_name = "trip_expenses" AND sql IS NOT NULL order by type = "table" desc
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.053ms] [34;1m[rows:-][0m SELECT * FROM `trip_expenses` LIMIT 1
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.031ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "table" AND tbl_name = "trip_expenses" AND (sql LIKE "%CONSTRAINT ""fk_trips_expenses"" %" OR sql LIKE "%CONSTRAINT fk_trips_expenses %" OR sql LIKE "%CONSTRAINT `fk_trips_expenses`%" OR sql LIKE "%CONSTRAINT [fk_trips_expenses]%" OR sql LIKE "%CONSTRAINT 	fk_trips_expenses	%")
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.016ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "index" AND tbl_name = "trip_expenses" AND name = "idx_trip_expenses_trip_id"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.020ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type='table' AND name="trip_members"
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.052ms] [34;1m[rows:1][0m SELECT sql FROM sqlite_master WHERE type IN ("table","index") AND tbl_name = "trip_members" AND sql IS NOT NULL order by type = "table" desc
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.019ms] [34;1m[rows:-][0m SELECT * FROM `trip_members` LIMIT 1
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.039ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "table" AND tbl_name = "trip_members" AND (sql LIKE "%CONSTRAINT ""fk_trips_members"" %" OR sql LIKE "%CONSTRAINT fk_trips_members %" OR sql LIKE "%CONSTRAINT `fk_trips_members`%" OR sql LIKE "%CONSTRAINT [fk_trips_members]%" OR sql LIKE "%CONSTRAINT 	fk_trips_members	%")
+
+2026/07/04 06:54:01 [32m/run/media/adel/Track/Projects/backend/internal/database/sqlite.go:45
+[0m[33m[0.034ms] [34;1m[rows:-][0m SELECT count(*) FROM sqlite_master WHERE type = "table" AND tbl_name = "trip_members" AND (sql LIKE "%CONSTRAINT ""fk_users_trip_members"" %" OR sql LIKE "%CONSTRAINT fk_users_trip_members %" OR sql LIKE "%CONSTRAINT `fk_users_trip_members`%" OR sql LIKE "%CONSTRAINT [fk_users_trip_members]%" OR sql LIKE "%CONSTRAINT 	fk_users_trip_members	%")
+2026/07/04 06:54:01 Database migration completed
+2026/07/04 06:54:01 ⚠️ Warning: Failed to initialize Cloudinary client: must provide CLOUDINARY_URL
+[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /health                   --> main.main.func1 (5 handlers)
+[GIN-debug] POST   /api/auth/register        --> github.com/kemit/trip-planner/internal/handlers.(*AuthHandler).Register-fm (5 handlers)
+[GIN-debug] POST   /api/auth/login           --> github.com/kemit/trip-planner/internal/handlers.(*AuthHandler).Login-fm (5 handlers)
+[GIN-debug] POST   /api/auth/google          --> github.com/kemit/trip-planner/internal/handlers.(*AuthHandler).GoogleAuth-fm (5 handlers)
+[GIN-debug] POST   /api/auth/forgot-password --> github.com/kemit/trip-planner/internal/handlers.(*AuthHandler).ForgotPassword-fm (5 handlers)
+[GIN-debug] POST   /api/auth/reset-password  --> github.com/kemit/trip-planner/internal/handlers.(*AuthHandler).ResetPassword-fm (5 handlers)
+[GIN-debug] POST   /api/auth/refresh         --> github.com/kemit/trip-planner/internal/handlers.(*AuthHandler).RefreshToken-fm (5 handlers)
+[GIN-debug] GET    /api/auth/me              --> github.com/kemit/trip-planner/internal/handlers.(*AuthHandler).Me-fm (6 handlers)
+[GIN-debug] POST   /api/auth/logout          --> github.com/kemit/trip-planner/internal/handlers.(*AuthHandler).Logout-fm (6 handlers)
+[GIN-debug] PUT    /api/users/profile        --> github.com/kemit/trip-planner/internal/handlers.(*UserHandler).UpdateProfile-fm (6 handlers)
+[GIN-debug] PUT    /api/users/preferences    --> github.com/kemit/trip-planner/internal/handlers.(*UserHandler).UpdatePreferences-fm (6 handlers)
+[GIN-debug] PUT    /api/users/password       --> github.com/kemit/trip-planner/internal/handlers.(*UserHandler).ChangePassword-fm (6 handlers)
+[GIN-debug] PUT    /api/users/avatar         --> github.com/kemit/trip-planner/internal/handlers.(*UserHandler).UpdateAvatar-fm (6 handlers)
+[GIN-debug] GET    /api/users/stats          --> github.com/kemit/trip-planner/internal/handlers.(*UserHandler).GetStats-fm (6 handlers)
+[GIN-debug] GET    /api/users/saved-places   --> github.com/kemit/trip-planner/internal/handlers.(*UserHandler).GetSavedPlaces-fm (6 handlers)
+[GIN-debug] DELETE /api/users/account        --> github.com/kemit/trip-planner/internal/handlers.(*UserHandler).DeleteAccount-fm (6 handlers)
+[GIN-debug] GET    /api/places               --> github.com/kemit/trip-planner/internal/handlers.(*PlaceHandler).ListPlaces-fm (5 handlers)
+[GIN-debug] GET    /api/places/popular       --> github.com/kemit/trip-planner/internal/handlers.(*PlaceHandler).PopularPlaces-fm (5 handlers)
+[GIN-debug] GET    /api/places/search        --> github.com/kemit/trip-planner/internal/handlers.(*PlaceHandler).SearchPlaces-fm (5 handlers)
+[GIN-debug] GET    /api/places/categories    --> github.com/kemit/trip-planner/internal/handlers.(*PlaceHandler).ListCategories-fm (5 handlers)
+[GIN-debug] GET    /api/places/cities        --> github.com/kemit/trip-planner/internal/handlers.(*PlaceHandler).ListCities-fm (5 handlers)
+[GIN-debug] GET    /api/places/trending      --> github.com/kemit/trip-planner/internal/handlers.(*PlaceHandler).TrendingSearches-fm (5 handlers)
+[GIN-debug] GET    /api/places/:id           --> github.com/kemit/trip-planner/internal/handlers.(*PlaceHandler).GetPlace-fm (5 handlers)
+[GIN-debug] GET    /api/places/:id/reviews   --> github.com/kemit/trip-planner/internal/handlers.(*ReviewHandler).ListReviews-fm (5 handlers)
+[GIN-debug] POST   /api/places/:id/photo     --> github.com/kemit/trip-planner/internal/handlers.(*PlaceHandler).UploadPlacePhoto-fm (6 handlers)
+[GIN-debug] POST   /api/places/:id/save      --> github.com/kemit/trip-planner/internal/handlers.(*PlaceHandler).SavePlace-fm (6 handlers)
+[GIN-debug] DELETE /api/places/:id/save      --> github.com/kemit/trip-planner/internal/handlers.(*PlaceHandler).UnsavePlace-fm (6 handlers)
+[GIN-debug] GET    /api/places/:id/save      --> github.com/kemit/trip-planner/internal/handlers.(*PlaceHandler).IsSaved-fm (6 handlers)
+[GIN-debug] POST   /api/places/:id/reviews   --> github.com/kemit/trip-planner/internal/handlers.(*ReviewHandler).CreateReview-fm (6 handlers)
+[GIN-debug] PUT    /api/places/:id/reviews/:reviewId --> github.com/kemit/trip-planner/internal/handlers.(*ReviewHandler).UpdateReview-fm (6 handlers)
+[GIN-debug] DELETE /api/places/:id/reviews/:reviewId --> github.com/kemit/trip-planner/internal/handlers.(*ReviewHandler).DeleteReview-fm (6 handlers)
+[GIN-debug] POST   /api/trips                --> github.com/kemit/trip-planner/internal/handlers.(*TripHandler).CreateTrip-fm (6 handlers)
+[GIN-debug] GET    /api/trips                --> github.com/kemit/trip-planner/internal/handlers.(*TripHandler).ListTrips-fm (6 handlers)
+[GIN-debug] GET    /api/trips/:id            --> github.com/kemit/trip-planner/internal/handlers.(*TripHandler).GetTrip-fm (6 handlers)
+[GIN-debug] PUT    /api/trips/:id            --> github.com/kemit/trip-planner/internal/handlers.(*TripHandler).UpdateTrip-fm (6 handlers)
+[GIN-debug] DELETE /api/trips/:id            --> github.com/kemit/trip-planner/internal/handlers.(*TripHandler).DeleteTrip-fm (6 handlers)
+[GIN-debug] POST   /api/trips/:id/regenerate --> github.com/kemit/trip-planner/internal/handlers.(*TripHandler).RegenerateItinerary-fm (6 handlers)
+[GIN-debug] POST   /api/trips/:id/activities --> github.com/kemit/trip-planner/internal/handlers.(*TripHandler).CreateActivity-fm (6 handlers)
+[GIN-debug] PUT    /api/trips/:id/activities/:activityId --> github.com/kemit/trip-planner/internal/handlers.(*TripHandler).UpdateActivity-fm (6 handlers)
+[GIN-debug] DELETE /api/trips/:id/activities/:activityId --> github.com/kemit/trip-planner/internal/handlers.(*TripHandler).DeleteActivity-fm (6 handlers)
+[GIN-debug] POST   /api/trips/:id/expenses   --> github.com/kemit/trip-planner/internal/handlers.(*ExpenseHandler).CreateExpense-fm (6 handlers)
+[GIN-debug] GET    /api/trips/:id/expenses   --> github.com/kemit/trip-planner/internal/handlers.(*ExpenseHandler).ListExpenses-fm (6 handlers)
+[GIN-debug] PUT    /api/trips/:id/expenses/:expenseId --> github.com/kemit/trip-planner/internal/handlers.(*ExpenseHandler).UpdateExpense-fm (6 handlers)
+[GIN-debug] DELETE /api/trips/:id/expenses/:expenseId --> github.com/kemit/trip-planner/internal/handlers.(*ExpenseHandler).DeleteExpense-fm (6 handlers)
+[GIN-debug] POST   /api/trips/:id/members    --> github.com/kemit/trip-planner/internal/handlers.(*MemberHandler).AddMember-fm (6 handlers)
+[GIN-debug] GET    /api/trips/:id/members    --> github.com/kemit/trip-planner/internal/handlers.(*MemberHandler).ListMembers-fm (6 handlers)
+[GIN-debug] PUT    /api/trips/:id/members/:userId --> github.com/kemit/trip-planner/internal/handlers.(*MemberHandler).UpdateMemberRole-fm (6 handlers)
+[GIN-debug] DELETE /api/trips/:id/members/:userId --> github.com/kemit/trip-planner/internal/handlers.(*MemberHandler).RemoveMember-fm (6 handlers)
+[GIN-debug] POST   /api/chat                 --> github.com/kemit/trip-planner/internal/handlers.(*ChatHandler).SendMessage-fm (7 handlers)
+[GIN-debug] POST   /api/chat/stream          --> github.com/kemit/trip-planner/internal/handlers.(*ChatHandler).StreamMessage-fm (7 handlers)
+[GIN-debug] GET    /api/chat/history         --> github.com/kemit/trip-planner/internal/handlers.(*ChatHandler).ListSessions-fm (6 handlers)
+[GIN-debug] GET    /api/chat/:id             --> github.com/kemit/trip-planner/internal/handlers.(*ChatHandler).GetSession-fm (6 handlers)
+[GIN-debug] PUT    /api/chat/:id             --> github.com/kemit/trip-planner/internal/handlers.(*ChatHandler).RenameSession-fm (6 handlers)
+[GIN-debug] DELETE /api/chat/:id             --> github.com/kemit/trip-planner/internal/handlers.(*ChatHandler).DeleteSession-fm (6 handlers)
+[GIN-debug] GET    /api/notifications        --> github.com/kemit/trip-planner/internal/handlers.(*NotificationHandler).ListNotifications-fm (6 handlers)
+[GIN-debug] GET    /api/notifications/unread-count --> github.com/kemit/trip-planner/internal/handlers.(*NotificationHandler).UnreadCount-fm (6 handlers)
+[GIN-debug] PUT    /api/notifications/:id/read --> github.com/kemit/trip-planner/internal/handlers.(*NotificationHandler).MarkAsRead-fm (6 handlers)
+[GIN-debug] PUT    /api/notifications/read-all --> github.com/kemit/trip-planner/internal/handlers.(*NotificationHandler).MarkAllAsRead-fm (6 handlers)
+[GIN-debug] GET    /swagger/*any             --> github.com/swaggo/gin-swagger.CustomWrapHandler.func1 (5 handlers)
+2026/07/04 06:54:01 🚀 Trip Planner API starting on http://localhost:8080
+2026/07/04 06:54:01 📋 Health check: http://localhost:8080/health
+2026/07/04 06:54:01 📚 Swagger Documentation: http://localhost:8080/swagger/index.html
+[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
+Please check https://github.com/gin-gonic/gin/blob/master/docs/doc.md#dont-trust-all-proxies for details.
+[GIN-debug] Listening and serving HTTP on :8080
+
+2026/07/04 06:55:06 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:21 [33mSLOW SQL >= 200ms
+[0m[31;1m[393.276ms] [33m[rows:1][35m INSERT INTO `chat_sessions` (`id`,`user_id`,`title`,`title_auto_generated`,`created_at`,`updated_at`,`deleted_at`) VALUES ("2f208760-6543-4dc5-837f-eb1d770490e7","afe1e5a8-0873-48ae-ae5a-f4bd795e0722","Can you tell me about pyramids?",true,"2026-07-04 06:55:06.298","2026-07-04 06:55:06.298",NULL)[0m
+
+2026/07/04 06:55:06 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:113
+[0m[33m[1.677ms] [34;1m[rows:1][0m INSERT INTO `chat_messages` (`id`,`session_id`,`role`,`content`,`is_verified`,`related_places`,`created_at`) VALUES ("ad0ec603-fbb0-400a-8e68-699161d26500","2f208760-6543-4dc5-837f-eb1d770490e7","user","Can you tell me about pyramids?",false,NULL,"2026-07-04 06:55:06.692")
+
+2026/07/04 06:55:06 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:118
+[0m[33m[0.733ms] [34;1m[rows:1][0m UPDATE `chat_sessions` SET `updated_at`="2026-07-04 06:55:06.694" WHERE id = "2f208760-6543-4dc5-837f-eb1d770490e7" AND `chat_sessions`.`deleted_at` IS NULL
+
+2026/07/04 06:55:06 [32m/run/media/adel/Track/Projects/backend/internal/repository/user_repo.go:32
+[0m[33m[0.539ms] [34;1m[rows:1][0m SELECT * FROM `users` WHERE id = "afe1e5a8-0873-48ae-ae5a-f4bd795e0722" AND `users`.`deleted_at` IS NULL ORDER BY `users`.`id` LIMIT 1
+
+2026/07/04 06:55:06 [31;1m/run/media/adel/Track/Projects/backend/internal/repository/user_repo.go:95 [35;1mno such column: trips.deleted_at
+[0m[33m[0.172ms] [34;1m[rows:0][0m SELECT `trip_destinations`.`city` FROM `trip_destinations` JOIN trips ON trips.id = trip_destinations.trip_id AND trips.user_id = "afe1e5a8-0873-48ae-ae5a-f4bd795e0722" WHERE trips.deleted_at IS NULL GROUP BY `trip_destinations`.`city` ORDER BY MAX(trips.created_at) DESC LIMIT 5
+
+2026/07/04 06:55:06 [32m/run/media/adel/Track/Projects/backend/internal/repository/saved_place_repo.go:75
+[0m[33m[0.381ms] [34;1m[rows:0][0m SELECT `places`.`name` FROM `saved_places` JOIN places ON places.id = saved_places.place_id WHERE saved_places.user_id = "afe1e5a8-0873-48ae-ae5a-f4bd795e0722" ORDER BY saved_places.created_at DESC LIMIT 8
+
+2026/07/04 06:55:06 [32m/run/media/adel/Track/Projects/backend/internal/repository/place_repo.go:144
+[0m[33m[0.999ms] [34;1m[rows:0][0m SELECT * FROM `places` WHERE LOWER(name) LIKE LOWER("%Can you tell me about pyramids?%") OR LOWER(city) LIKE LOWER("%Can you tell me about pyramids?%") OR LOWER(category) LIKE LOWER("%Can you tell me about pyramids?%") ORDER BY rating DESC LIMIT 8
+
+2026/07/04 06:55:10 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:113
+[0m[33m[32.051ms] [34;1m[rows:1][0m INSERT INTO `chat_messages` (`id`,`session_id`,`role`,`content`,`is_verified`,`related_places`,`created_at`) VALUES ("776daeba-6935-4972-a44d-c56fa02b59f5","2f208760-6543-4dc5-837f-eb1d770490e7","assistant","Test User, you've chosen a fantastic topic! The pyramids are undoubtedly one of Egypt's most iconic and awe-inspiring attractions. The most famous are located on the Giza Plateau, just outside Cairo. Here, you'll find the majestic Great Pyramid of Giza (belonging to Pharaoh Khufu), the Pyramid of Khafre with its intact capstone, and the Pyramid of Menkaure. These colossal structures served as tombs for ancient pharaohs and remain a testament to ancient Egyptian engineering and civilization. 
+
+Given that it's summer, I highly recommend visiting the Giza Pyramids early in the morning or later in the afternoon to avoid the midday heat. Beyond Giza, don't miss Saqqara, home to the Step Pyramid of Djoser – considered the world's oldest stone building. Further south at Dahshur, you can explore the Bent Pyramid and the Red Pyramid, offering a fascinating look into the evolution of pyramid construction. Remember to stay hydrated during your visits!",false,"[]","2026-07-04 06:55:10.705")
+
+2026/07/04 06:55:10 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:118
+[0m[33m[0.746ms] [34;1m[rows:1][0m UPDATE `chat_sessions` SET `updated_at`="2026-07-04 06:55:10.737" WHERE id = "2f208760-6543-4dc5-837f-eb1d770490e7" AND `chat_sessions`.`deleted_at` IS NULL
+
+2026/07/04 06:55:10 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:134
+[0m[33m[0.647ms] [34;1m[rows:1][0m UPDATE `chat_sessions` SET `title`="Egypt's Ancient Pyramids",`title_auto_generated`=true,`updated_at`="2026-07-04 06:55:10.738" WHERE id = "2f208760-6543-4dc5-837f-eb1d770490e7" AND `chat_sessions`.`deleted_at` IS NULL
+[GIN] 2026/07/04 - 06:55:10 | 201 |    4.44s |             ::1 | POST     "/api/chat"
+
+2026/07/04 06:56:20 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:21
+[0m[33m[2.427ms] [34;1m[rows:1][0m INSERT INTO `chat_sessions` (`id`,`user_id`,`title`,`title_auto_generated`,`created_at`,`updated_at`,`deleted_at`) VALUES ("2c114c5b-558d-4ac8-8114-b90a737013ca","afe1e5a8-0873-48ae-ae5a-f4bd795e0722","Whats your opinion about egypt ?",true,"2026-07-04 06:56:20.507","2026-07-04 06:56:20.507",NULL)
+
+2026/07/04 06:56:20 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:113
+[0m[33m[1.188ms] [34;1m[rows:1][0m INSERT INTO `chat_messages` (`id`,`session_id`,`role`,`content`,`is_verified`,`related_places`,`created_at`) VALUES ("17feb467-c8c7-464b-8582-61991ffba358","2c114c5b-558d-4ac8-8114-b90a737013ca","user","Whats your opinion about egypt ?",false,NULL,"2026-07-04 06:56:20.509")
+
+2026/07/04 06:56:20 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:118
+[0m[33m[0.677ms] [34;1m[rows:1][0m UPDATE `chat_sessions` SET `updated_at`="2026-07-04 06:56:20.511" WHERE id = "2c114c5b-558d-4ac8-8114-b90a737013ca" AND `chat_sessions`.`deleted_at` IS NULL
+
+2026/07/04 06:56:20 [32m/run/media/adel/Track/Projects/backend/internal/repository/user_repo.go:32
+[0m[33m[0.308ms] [34;1m[rows:1][0m SELECT * FROM `users` WHERE id = "afe1e5a8-0873-48ae-ae5a-f4bd795e0722" AND `users`.`deleted_at` IS NULL ORDER BY `users`.`id` LIMIT 1
+
+2026/07/04 06:56:20 [31;1m/run/media/adel/Track/Projects/backend/internal/repository/user_repo.go:95 [35;1mno such column: trips.deleted_at
+[0m[33m[0.059ms] [34;1m[rows:0][0m SELECT `trip_destinations`.`city` FROM `trip_destinations` JOIN trips ON trips.id = trip_destinations.trip_id AND trips.user_id = "afe1e5a8-0873-48ae-ae5a-f4bd795e0722" WHERE trips.deleted_at IS NULL GROUP BY `trip_destinations`.`city` ORDER BY MAX(trips.created_at) DESC LIMIT 5
+
+2026/07/04 06:56:20 [32m/run/media/adel/Track/Projects/backend/internal/repository/saved_place_repo.go:75
+[0m[33m[0.130ms] [34;1m[rows:0][0m SELECT `places`.`name` FROM `saved_places` JOIN places ON places.id = saved_places.place_id WHERE saved_places.user_id = "afe1e5a8-0873-48ae-ae5a-f4bd795e0722" ORDER BY saved_places.created_at DESC LIMIT 8
+
+2026/07/04 06:56:20 [32m/run/media/adel/Track/Projects/backend/internal/repository/place_repo.go:144
+[0m[33m[0.178ms] [34;1m[rows:0][0m SELECT * FROM `places` WHERE LOWER(name) LIKE LOWER("%Whats your opinion about egypt ?%") OR LOWER(city) LIKE LOWER("%Whats your opinion about egypt ?%") OR LOWER(category) LIKE LOWER("%Whats your opinion about egypt ?%") ORDER BY rating DESC LIMIT 8
+2026/07/04 06:56:21 AI chat error: failed to send message to gemini: googleapi: Error 503: This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.
+
+2026/07/04 06:56:21 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:113
+[0m[33m[2.898ms] [34;1m[rows:1][0m INSERT INTO `chat_messages` (`id`,`session_id`,`role`,`content`,`is_verified`,`related_places`,`created_at`) VALUES ("ed400c72-d314-47ec-b45e-578d0a035bc6","2c114c5b-558d-4ac8-8114-b90a737013ca","assistant","I'm sorry, I'm currently unable to process your request. Please try again later.",false,NULL,"2026-07-04 06:56:21.677")
+
+2026/07/04 06:56:21 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:118
+[0m[33m[0.755ms] [34;1m[rows:1][0m UPDATE `chat_sessions` SET `updated_at`="2026-07-04 06:56:21.68" WHERE id = "2c114c5b-558d-4ac8-8114-b90a737013ca" AND `chat_sessions`.`deleted_at` IS NULL
+[GIN] 2026/07/04 - 06:56:21 | 201 |    1.17s |             ::1 | POST     "/api/chat"
+
+2026/07/04 06:56:41 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:21
+[0m[33m[3.080ms] [34;1m[rows:1][0m INSERT INTO `chat_sessions` (`id`,`user_id`,`title`,`title_auto_generated`,`created_at`,`updated_at`,`deleted_at`) VALUES ("e70cb1ec-5aaf-4e16-9b8e-6a44686632a1","afe1e5a8-0873-48ae-ae5a-f4bd795e0722","Whats your opinion about egypt ?",true,"2026-07-04 06:56:41.407","2026-07-04 06:56:41.407",NULL)
+
+2026/07/04 06:56:41 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:113
+[0m[33m[0.892ms] [34;1m[rows:1][0m INSERT INTO `chat_messages` (`id`,`session_id`,`role`,`content`,`is_verified`,`related_places`,`created_at`) VALUES ("9c74f79a-cd97-4f36-9e8a-d9668bed667f","e70cb1ec-5aaf-4e16-9b8e-6a44686632a1","user","Whats your opinion about egypt ?",false,NULL,"2026-07-04 06:56:41.41")
+
+2026/07/04 06:56:41 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:118
+[0m[33m[0.862ms] [34;1m[rows:1][0m UPDATE `chat_sessions` SET `updated_at`="2026-07-04 06:56:41.411" WHERE id = "e70cb1ec-5aaf-4e16-9b8e-6a44686632a1" AND `chat_sessions`.`deleted_at` IS NULL
+
+2026/07/04 06:56:41 [32m/run/media/adel/Track/Projects/backend/internal/repository/user_repo.go:32
+[0m[33m[0.290ms] [34;1m[rows:1][0m SELECT * FROM `users` WHERE id = "afe1e5a8-0873-48ae-ae5a-f4bd795e0722" AND `users`.`deleted_at` IS NULL ORDER BY `users`.`id` LIMIT 1
+
+2026/07/04 06:56:41 [31;1m/run/media/adel/Track/Projects/backend/internal/repository/user_repo.go:95 [35;1mno such column: trips.deleted_at
+[0m[33m[0.103ms] [34;1m[rows:0][0m SELECT `trip_destinations`.`city` FROM `trip_destinations` JOIN trips ON trips.id = trip_destinations.trip_id AND trips.user_id = "afe1e5a8-0873-48ae-ae5a-f4bd795e0722" WHERE trips.deleted_at IS NULL GROUP BY `trip_destinations`.`city` ORDER BY MAX(trips.created_at) DESC LIMIT 5
+
+2026/07/04 06:56:41 [32m/run/media/adel/Track/Projects/backend/internal/repository/saved_place_repo.go:75
+[0m[33m[0.257ms] [34;1m[rows:0][0m SELECT `places`.`name` FROM `saved_places` JOIN places ON places.id = saved_places.place_id WHERE saved_places.user_id = "afe1e5a8-0873-48ae-ae5a-f4bd795e0722" ORDER BY saved_places.created_at DESC LIMIT 8
+
+2026/07/04 06:56:41 [32m/run/media/adel/Track/Projects/backend/internal/repository/place_repo.go:144
+[0m[33m[0.448ms] [34;1m[rows:0][0m SELECT * FROM `places` WHERE LOWER(name) LIKE LOWER("%Whats your opinion about egypt ?%") OR LOWER(city) LIKE LOWER("%Whats your opinion about egypt ?%") OR LOWER(category) LIKE LOWER("%Whats your opinion about egypt ?%") ORDER BY rating DESC LIMIT 8
+
+2026/07/04 06:56:46 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:113
+[0m[33m[2.627ms] [34;1m[rows:1][0m INSERT INTO `chat_messages` (`id`,`session_id`,`role`,`content`,`is_verified`,`related_places`,`created_at`) VALUES ("46d4189b-c239-48a4-afa5-dc33437a978a","e70cb1ec-5aaf-4e16-9b8e-6a44686632a1","assistant","Hello Test User! As WAYNX, your dedicated Egypt travel expert, I must say my 'opinion' is that Egypt is an absolutely breathtaking and unforgettable destination, especially if you're planning a visit this summer! It's a land where ancient history meets vibrant modern culture, all under the warm Egyptian sun.
+
+You can marvel at the iconic Pyramids of Giza, cruise the majestic Nile River to uncover Luxor's temples, or unwind on the stunning Red Sea beaches in places like Sharm El Sheikh or Hurghada, which are perfect for cooling off and enjoying water sports during the summer months. The hospitality, the delicious Egyptian cuisine, and the sheer scale of the historical sites are truly captivating. Whether you're a history buff, an adventurer, or just looking to relax, Egypt offers an incredible array of experiences. I'm truly excited for you to discover its wonders!",false,"[]","2026-07-04 06:56:46.432")
+
+2026/07/04 06:56:46 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:118
+[0m[33m[0.627ms] [34;1m[rows:1][0m UPDATE `chat_sessions` SET `updated_at`="2026-07-04 06:56:46.435" WHERE id = "e70cb1ec-5aaf-4e16-9b8e-6a44686632a1" AND `chat_sessions`.`deleted_at` IS NULL
+
+2026/07/04 06:56:46 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:134
+[0m[33m[0.517ms] [34;1m[rows:1][0m UPDATE `chat_sessions` SET `title`="Discovering Egypt's Wonders",`title_auto_generated`=true,`updated_at`="2026-07-04 06:56:46.436" WHERE id = "e70cb1ec-5aaf-4e16-9b8e-6a44686632a1" AND `chat_sessions`.`deleted_at` IS NULL
+[GIN] 2026/07/04 - 06:56:46 | 201 |    5.03s |             ::1 | POST     "/api/chat"
+
+2026/07/04 07:08:55 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:21 [33mSLOW SQL >= 200ms
+[0m[31;1m[276.935ms] [33m[rows:1][35m INSERT INTO `chat_sessions` (`id`,`user_id`,`title`,`title_auto_generated`,`created_at`,`updated_at`,`deleted_at`) VALUES ("73ea4c70-ec58-407a-aa49-e4dc0497cddd","afe1e5a8-0873-48ae-ae5a-f4bd795e0722","Can you tell me about pyramids?.",true,"2026-07-04 07:08:55.492","2026-07-04 07:08:55.492",NULL)[0m
+
+2026/07/04 07:08:55 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:113
+[0m[33m[4.962ms] [34;1m[rows:1][0m INSERT INTO `chat_messages` (`id`,`session_id`,`role`,`content`,`is_verified`,`related_places`,`created_at`) VALUES ("ac0ba051-2d8b-4918-b376-9662be139fe6","73ea4c70-ec58-407a-aa49-e4dc0497cddd","user","Can you tell me about pyramids?.",false,NULL,"2026-07-04 07:08:55.77")
+
+2026/07/04 07:08:55 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:118
+[0m[33m[4.163ms] [34;1m[rows:1][0m UPDATE `chat_sessions` SET `updated_at`="2026-07-04 07:08:55.784" WHERE id = "73ea4c70-ec58-407a-aa49-e4dc0497cddd" AND `chat_sessions`.`deleted_at` IS NULL
+
+2026/07/04 07:08:55 [32m/run/media/adel/Track/Projects/backend/internal/repository/user_repo.go:32
+[0m[33m[0.419ms] [34;1m[rows:1][0m SELECT * FROM `users` WHERE id = "afe1e5a8-0873-48ae-ae5a-f4bd795e0722" AND `users`.`deleted_at` IS NULL ORDER BY `users`.`id` LIMIT 1
+
+2026/07/04 07:08:55 [31;1m/run/media/adel/Track/Projects/backend/internal/repository/user_repo.go:95 [35;1mno such column: trips.deleted_at
+[0m[33m[0.149ms] [34;1m[rows:0][0m SELECT `trip_destinations`.`city` FROM `trip_destinations` JOIN trips ON trips.id = trip_destinations.trip_id AND trips.user_id = "afe1e5a8-0873-48ae-ae5a-f4bd795e0722" WHERE trips.deleted_at IS NULL GROUP BY `trip_destinations`.`city` ORDER BY MAX(trips.created_at) DESC LIMIT 5
+
+2026/07/04 07:08:55 [32m/run/media/adel/Track/Projects/backend/internal/repository/saved_place_repo.go:75
+[0m[33m[0.473ms] [34;1m[rows:0][0m SELECT `places`.`name` FROM `saved_places` JOIN places ON places.id = saved_places.place_id WHERE saved_places.user_id = "afe1e5a8-0873-48ae-ae5a-f4bd795e0722" ORDER BY saved_places.created_at DESC LIMIT 8
+
+2026/07/04 07:08:55 [32m/run/media/adel/Track/Projects/backend/internal/repository/place_repo.go:144
+[0m[33m[1.227ms] [34;1m[rows:0][0m SELECT * FROM `places` WHERE LOWER(name) LIKE LOWER("%Can you tell me about pyramids?.%") OR LOWER(city) LIKE LOWER("%Can you tell me about pyramids?.%") OR LOWER(category) LIKE LOWER("%Can you tell me about pyramids?.%") ORDER BY rating DESC LIMIT 8
+
+2026/07/04 07:09:00 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:113
+[0m[33m[2.945ms] [34;1m[rows:1][0m INSERT INTO `chat_messages` (`id`,`session_id`,`role`,`content`,`is_verified`,`related_places`,`created_at`) VALUES ("009a718f-43f2-4b04-9c86-5aed6051c365","73ea4c70-ec58-407a-aa49-e4dc0497cddd","assistant","Ah, hello there, Test User! Exploring the pyramids is an absolute must when you're visiting Egypt, especially in the summer – just be sure to plan your visits for early mornings to beat the heat!
+
+Egypt is home to many incredible ancient pyramids, but when people think of ""the pyramids,"" they are usually referring to the magnificent **Pyramids of Giza**.
+
+Here's a bit about them and other significant sites:
+
+1.  **The Giza Necropolis (near Cairo)**:
+    *   This is the most famous site, featuring the three iconic great pyramids: **Khufu (the Great Pyramid)**, **Khafre**, and **Menkaure**. Khufu's pyramid is the only one of the Seven Wonders of the Ancient World still largely intact.
+    *   You'll also find the enigmatic **Great Sphinx of Giza** here, guarding the plateau.
+    *   **Summer Tip**: Go as early as possible in the morning (they typically open around 7 AM). Bring plenty of water, wear a hat, sunglasses, and high-SPF sunscreen. There's not much shade. You can hire a camel or horse ride, but always agree on the price beforehand.
+
+2.  **Saqqara (near Cairo)**:
+    *   Just a short drive from Giza, Saqqara is home to the **Step Pyramid of Djoser**. This is considered the world's first stone building and oldest monumental stone structure, predating the Giza pyramids. It's a fantastic place to see the evolution of pyramid construction.
+
+3.  **Dahshur (near Cairo)**:
+    *   South of Saqqara, Dahshur features two very important pyramids built for Pharaoh Sneferu (father of Khufu):
+        *   The **Bent Pyramid**, which shows a clear change in angle during its construction.
+        *   The **Red Pyramid**, considered Egypt's first successful ""true"" smooth-sided pyramid. It's often less crowded than Giza and you can usually go inside.
+
+When you plan your trip, consider hiring a licensed Egyptologist guide. They can provide fascinating insights into the history and significance of these incredible structures, making your summer visit even more enriching!",false,NULL,"2026-07-04 07:09:00.312")
+
+2026/07/04 07:09:00 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:118
+[0m[33m[0.709ms] [34;1m[rows:1][0m UPDATE `chat_sessions` SET `updated_at`="2026-07-04 07:09:00.316" WHERE id = "73ea4c70-ec58-407a-aa49-e4dc0497cddd" AND `chat_sessions`.`deleted_at` IS NULL
+
+2026/07/04 07:09:00 [32m/run/media/adel/Track/Projects/backend/internal/repository/chat_repo.go:134
+[0m[33m[0.739ms] [34;1m[rows:1][0m UPDATE `chat_sessions` SET `title`="Can you tell me about pyramids?.",`title_auto_generated`=true,`updated_at`="2026-07-04 07:09:00.317" WHERE id = "73ea4c70-ec58-407a-aa49-e4dc0497cddd" AND `chat_sessions`.`deleted_at` IS NULL
+[GIN] 2026/07/04 - 07:09:00 | 200 |    4.82s |             ::1 | POST     "/api/chat/stream"

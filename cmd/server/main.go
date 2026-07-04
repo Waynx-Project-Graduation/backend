@@ -44,6 +44,7 @@ func main() {
 
 	// Initialize AI client
 	aiClient := services.NewAIClient(cfg.GeminiAPIKey, cfg.WAYNXBaseURL, cfg.AITimeoutSeconds)
+	defer aiClient.Close()
 
 	// ── Repositories ──────────────────────────────────────────────────
 	userRepo := repository.NewUserRepository(db)
@@ -61,7 +62,7 @@ func main() {
 	userService := services.NewUserService(userRepo, savedPlaceRepo, chatRepo)
 	placeService := services.NewPlaceService(placeRepo)
 	tripService := services.NewTripService(tripRepo, placeRepo, aiClient)
-	chatService := services.NewChatService(chatRepo, aiClient)
+	chatService := services.NewChatService(chatRepo, userRepo, savedPlaceRepo, placeRepo, aiClient)
 	savedPlaceService := services.NewSavedPlaceService(savedPlaceRepo, placeRepo)
 	cloudinaryService := services.NewCloudinaryService(cfg.CloudinaryURL)
 	notifService := services.NewNotificationService(notifRepo)
@@ -188,7 +189,11 @@ func main() {
 		chat := api.Group("/chat")
 		chat.Use(middleware.AuthMiddleware(jwtManager))
 		{
-			chat.POST("", chatHandler.SendMessage)
+			// AI-generating endpoints are rate-limited per user to bound cost:
+			// 20 messages/min with a small burst allowance.
+			chatLimit := middleware.RateLimitPerUser(20, 5)
+			chat.POST("", chatLimit, chatHandler.SendMessage)
+			chat.POST("/stream", chatLimit, chatHandler.StreamMessage)
 			chat.GET("/history", chatHandler.ListSessions)
 			chat.GET("/:id", chatHandler.GetSession)
 			chat.PUT("/:id", chatHandler.RenameSession)
