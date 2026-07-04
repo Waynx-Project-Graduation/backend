@@ -7,10 +7,14 @@ import (
 
 type PlaceService struct {
 	placeRepo *repository.PlaceRepository
+	aiClient  *AIClient
 }
 
-func NewPlaceService(placeRepo *repository.PlaceRepository) *PlaceService {
-	return &PlaceService{placeRepo: placeRepo}
+func NewPlaceService(placeRepo *repository.PlaceRepository, aiClient *AIClient) *PlaceService {
+	return &PlaceService{
+		placeRepo: placeRepo,
+		aiClient:  aiClient,
+	}
 }
 
 func (s *PlaceService) GetPlace(id uint) (*models.Place, error) {
@@ -61,4 +65,12 @@ func (s *PlaceService) UpdateThumbnail(id uint, url string) error {
 
 func (s *PlaceService) ListCities() ([]repository.CityInfo, error) {
 	return s.placeRepo.ListCities()
+}
+
+func (s *PlaceService) RecommendPlaces(req RecommendRequest) ([]AIRecommendation, error) {
+	resp, err := s.aiClient.GetRecommendation(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp.Recommendations, nil
 }

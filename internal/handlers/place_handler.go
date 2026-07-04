@@ -285,3 +285,35 @@ func (h *PlaceHandler) UploadPlacePhoto(c *gin.Context) {
 		"thumbnail_url": url,
 	})
 }
+
+// RecommendPlaces godoc
+// @Summary      Recommend places using AI
+// @Description  Get a list of recommended places based on user preferences using AI
+// @Tags         places
+// @Accept       json
+// @Produce      json
+// @Param        input body services.RecommendRequest true "Recommendation preferences"
+// @Success      200  {array}   services.AIRecommendation
+// @Failure      400  {object}  utils.Response
+// @Failure      500  {object}  utils.Response
+// @Router       /places/recommend [post]
+func (h *PlaceHandler) RecommendPlaces(c *gin.Context) {
+	var input services.RecommendRequest
+	if err := c.ShouldBindJSON(&input); err != nil {
+		utils.BadRequest(c, err.Error())
+		return
+	}
+
+	// The AI engine needs a duration to build a temporary cluster plan.
+	if input.TripDurationDays <= 0 {
+		input.TripDurationDays = 3
+	}
+
+	recommendations, err := h.placeService.RecommendPlaces(input)
+	if err != nil {
+		utils.InternalError(c, err.Error())
+		return
+	}
+
+	utils.Success(c, recommendations)
+}

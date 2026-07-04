@@ -255,6 +255,7 @@ All endpoints are JWT-protected and strictly scoped to the authenticated user.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
+| POST | `/places/recommend` | Get a list of top recommended places via AI |
 | GET | `/places` | List places with advanced filters |
 | GET | `/places/popular` | Get popular places by rating |
 | GET | `/places/search` | Search places by keyword |

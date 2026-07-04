@@ -60,7 +60,7 @@ func main() {
 	// ── Services ──────────────────────────────────────────────────────
 	authService := services.NewAuthService(userRepo, jwtManager)
 	userService := services.NewUserService(userRepo, savedPlaceRepo, chatRepo)
-	placeService := services.NewPlaceService(placeRepo)
+	placeService := services.NewPlaceService(placeRepo, aiClient)
 	tripService := services.NewTripService(tripRepo, placeRepo, aiClient)
 	chatService := services.NewChatService(chatRepo, userRepo, savedPlaceRepo, placeRepo, aiClient)
 	savedPlaceService := services.NewSavedPlaceService(savedPlaceRepo, placeRepo)
@@ -141,6 +141,7 @@ func main() {
 		// ── Place Routes (Public) ────────────────────────────
 		places := api.Group("/places")
 		{
+			places.POST("/recommend", placeHandler.RecommendPlaces)
 			places.GET("", placeHandler.ListPlaces)
 			places.GET("/popular", placeHandler.PopularPlaces)
 			places.GET("/search", placeHandler.SearchPlaces)
