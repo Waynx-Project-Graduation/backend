@@ -11,6 +11,7 @@ import (
 type SavedPlaceService struct {
 	savedPlaceRepo *repository.SavedPlaceRepository
 	placeRepo      *repository.PlaceRepository
+	awarder        PointsAwarder
 }
 
 func NewSavedPlaceService(savedPlaceRepo *repository.SavedPlaceRepository, placeRepo *repository.PlaceRepository) *SavedPlaceService {
@@ -18,6 +19,11 @@ func NewSavedPlaceService(savedPlaceRepo *repository.SavedPlaceRepository, place
 		savedPlaceRepo: savedPlaceRepo,
 		placeRepo:      placeRepo,
 	}
+}
+
+// SetPointsAwarder wires the gamification awarder (optional).
+func (s *SavedPlaceService) SetPointsAwarder(a PointsAwarder) {
+	s.awarder = a
 }
 
 // SavePlace adds a place to user's favorites
@@ -34,7 +40,14 @@ func (s *SavedPlaceService) SavePlace(userID uuid.UUID, placeID uint) error {
 		return errors.New("place already saved")
 	}
 
-	return s.savedPlaceRepo.Save(userID, placeID)
+	if err := s.savedPlaceRepo.Save(userID, placeID); err != nil {
+		return err
+	}
+
+	if s.awarder != nil {
+		_ = s.awarder.AwardPoints(userID, PointsPerSave)
+	}
+	return nil
 }
 
 // UnsavePlace removes a place from user's favorites

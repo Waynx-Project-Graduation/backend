@@ -32,6 +32,7 @@ pinned: false
 * **Place Reviews:** Community-driven 1-5 star ratings and written reviews on locations.
 * **Real-time Notifications:** In-app notification system with unread counts.
 * **Personalized AI Chat Assistant:** A conversational WAYNX assistant that knows each user — it injects their profile, saved places and past-trip history as context, grounds answers in real database places (trustworthy `is_verified`), streams responses token-by-token over SSE, and is rate-limited per user.
+* **Full User Management & Gamification:** Non-destructive partial profile/preference updates with validated enums, OAuth-aware password changes with session invalidation, guarded avatar uploads, a live explorer-points system with badge tiers, and privacy-safe account deletion that anonymizes the email for re-registration.
 
 ---
 
@@ -181,15 +182,74 @@ Base URL: `/api`
 
 ### User Management (Protected)
 
+Everything a signed-in user needs to manage their own account: profile, travel
+preferences, password, avatar, statistics, saved places, and account deletion.
+All endpoints are JWT-protected and strictly scoped to the authenticated user.
+
+#### What this feature can do (Capabilities)
+
+**1. View & edit profile**
+- Read the full profile (`GET /users/profile`) or update name, home city and
+  avatar (`PUT /users/profile`).
+- **Partial, non-destructive updates:** fields use pointers under the hood —
+  omitting a field leaves it unchanged, so updating your city never wipes your
+  name. Sending an empty value explicitly clears an optional field.
+
+**2. Travel preferences (feeds the AI)**
+- Set interests, budget, age group, travel companion, crowd preference and
+  season (`PUT /users/preferences`). These personalize both AI trip generation
+  and the WAYNX chat assistant.
+- **Partial updates preserved:** changing only your budget keeps the rest of your
+  preferences intact (no accidental wipe).
+- **Validated enums:** every field is checked against an allowed value set
+  (e.g. budget ∈ low/medium/high) so invalid data can't poison the AI prompts.
+
+**3. Secure password management**
+- Change password with old-password verification and bcrypt (cost 12)
+  (`PUT /users/password`).
+- **OAuth-aware:** social-login accounts (Google) get a clear "not available"
+  message instead of a confusing failure.
+- **Session invalidation:** a successful password change bumps the account's
+  token version, so refresh tokens issued to other/old sessions can no longer
+  mint new tokens.
+
+**4. Avatar upload**
+- Upload an avatar image (`PUT /users/avatar`) to Cloudinary.
+- **Guarded:** enforces a 5 MB size limit and validates both the content-type and
+  file extension (JPEG/PNG/WebP/GIF only) — non-image files are rejected.
+
+**5. Profile statistics & gamification**
+- `GET /users/stats` returns destinations visited, AI plans created, saved-places
+  count, chat-session count and explorer points.
+- **Explorer points are live:** users earn points for real actions — creating a
+  trip (+50), writing a review (+10), saving a place (+2) — and automatically
+  climb badge tiers: `explorer → traveler → adventurer → voyager → legend`.
+
+**6. Saved places**
+- List bookmarked places with pagination (`GET /users/saved-places`).
+
+**7. Account deletion (privacy-safe)**
+- Soft-deletes the account (`DELETE /users/account`) and **anonymizes the email**
+  in the same transaction, freeing the unique-email index so the person can
+  re-register later. Their sessions are invalidated at the same time.
+
+**8. Correct, honest error semantics**
+- Handlers return accurate HTTP status codes: `404` for a missing user, `401` for
+  a wrong current password, `400` for invalid input — instead of masking
+  everything as `500`. Internal DB errors are never leaked to clients.
+
+#### Endpoints
+
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| PUT | `/users/profile` | Update profile (name, city, avatar) |
-| PUT | `/users/preferences` | Set travel preferences |
-| PUT | `/users/password` | Change password |
-| PUT | `/users/avatar` | Upload avatar image |
-| GET | `/users/stats` | Get profile statistics |
-| GET | `/users/saved-places` | List bookmarked places |
-| DELETE | `/users/account` | Delete account (soft delete) |
+| GET | `/users/profile` | Get the authenticated user's full profile |
+| PUT | `/users/profile` | Update profile (name, city, avatar) — partial, non-destructive |
+| PUT | `/users/preferences` | Set travel preferences — partial, validated |
+| PUT | `/users/password` | Change password (verifies old password, invalidates other sessions) |
+| PUT | `/users/avatar` | Upload avatar image (type + size validated) |
+| GET | `/users/stats` | Get profile statistics & explorer points |
+| GET | `/users/saved-places` | List bookmarked places (paginated) |
+| DELETE | `/users/account` | Delete account (soft delete + email anonymized) |
 
 ### Places (Public)
 

@@ -77,9 +77,50 @@ func (r *UserRepository) UpdateExplorerPoints(userID uuid.UUID, points int) erro
 	return r.db.Model(&models.User{}).Where("id = ?", userID).Update("explorer_points", points).Error
 }
 
-// SoftDelete performs a soft delete on a user account
+// AddExplorerPoints atomically increments a user's explorer points by delta
+// (which may be negative). Returns the new total.
+func (r *UserRepository) AddExplorerPoints(userID uuid.UUID, delta int) (int, error) {
+	if err := r.db.Model(&models.User{}).
+		Where("id = ?", userID).
+		UpdateColumn("explorer_points", gorm.Expr("explorer_points + ?", delta)).Error; err != nil {
+		return 0, err
+	}
+	var user models.User
+	if err := r.db.Select("explorer_points").Where("id = ?", userID).First(&user).Error; err != nil {
+		return 0, err
+	}
+	return user.ExplorerPoints, nil
+}
+
+// UpdateBadge sets a user's badge type.
+func (r *UserRepository) UpdateBadge(userID uuid.UUID, badge string) error {
+	return r.db.Model(&models.User{}).Where("id = ?", userID).Update("badge_type", badge).Error
+}
+
+// BumpTokenVersion increments the user's token version, invalidating the ability
+// of previously-issued tokens to be refreshed.
+func (r *UserRepository) BumpTokenVersion(userID uuid.UUID) error {
+	return r.db.Model(&models.User{}).
+		Where("id = ?", userID).
+		UpdateColumn("token_version", gorm.Expr("token_version + 1")).Error
+}
+
+// SoftDelete performs a soft delete on a user account and anonymizes the email
+// so the unique index is freed and the person can re-register later. Runs both
+// updates in a transaction for consistency.
 func (r *UserRepository) SoftDelete(userID uuid.UUID) error {
-	return r.db.Where("id = ?", userID).Delete(&models.User{}).Error
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		anonymized := "deleted+" + userID.String() + "@deleted.waynx"
+		if err := tx.Model(&models.User{}).
+			Where("id = ?", userID).
+			Updates(map[string]interface{}{
+				"email":         anonymized,
+				"token_version": gorm.Expr("token_version + 1"),
+			}).Error; err != nil {
+			return err
+		}
+		return tx.Where("id = ?", userID).Delete(&models.User{}).Error
+	})
 }
 
 // RecentTripCities returns the distinct cities the user has recently traveled to,

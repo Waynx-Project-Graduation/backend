@@ -21,10 +21,13 @@ func TestUserService_UpdateProfileAndPreferences(t *testing.T) {
 	userRepo.Create(user)
 
 	// Update Profile
+	newName := "New Name"
+	newCity := "Alexandria"
+	newAvatar := "http://example.com/avatar.jpg"
 	profileInput := UpdateProfileInput{
-		FullName:  "New Name",
-		City:      "Alexandria",
-		AvatarURL: "http://example.com/avatar.jpg",
+		FullName:  &newName,
+		City:      &newCity,
+		AvatarURL: &newAvatar,
 	}
 	updatedUser, err := userService.UpdateProfile(user.ID, profileInput)
 	if err != nil {
@@ -35,9 +38,11 @@ func TestUserService_UpdateProfileAndPreferences(t *testing.T) {
 	}
 
 	// Update Preferences
+	interests := []string{"history", "food"}
+	companion := "family"
 	prefInput := UpdatePreferencesInput{
-		Interests:       []string{"history", "food"},
-		TravelCompanion: "family",
+		Interests:       &interests,
+		TravelCompanion: &companion,
 	}
 	updatedUser, err = userService.UpdatePreferences(user.ID, prefInput)
 	if err != nil {
@@ -45,6 +50,17 @@ func TestUserService_UpdateProfileAndPreferences(t *testing.T) {
 	}
 	if len(updatedUser.Preferences.Interests) != 2 || updatedUser.Preferences.TravelCompanion != "family" {
 		t.Errorf("Preferences not updated correctly")
+	}
+
+	// Partial update should preserve existing preferences (bug #4 regression).
+	budget := "medium"
+	partial := UpdatePreferencesInput{Budget: &budget}
+	updatedUser, err = userService.UpdatePreferences(user.ID, partial)
+	if err != nil {
+		t.Fatalf("Expected no error on partial preferences update, got: %v", err)
+	}
+	if updatedUser.Preferences.Budget != "medium" || len(updatedUser.Preferences.Interests) != 2 {
+		t.Errorf("Partial preference update should preserve interests; got %+v", updatedUser.Preferences)
 	}
 }
 

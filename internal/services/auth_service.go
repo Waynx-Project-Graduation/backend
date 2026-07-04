@@ -127,7 +127,7 @@ func (s *AuthService) Register(input RegisterInput) (*AuthResponse, error) {
 		return nil, errors.New("failed to create user")
 	}
 
-	tokens, err := s.jwtManager.GenerateTokenPair(user.ID, user.Email)
+	tokens, err := s.jwtManager.GenerateTokenPair(user.ID, user.Email, user.TokenVersion)
 	if err != nil {
 		return nil, errors.New("failed to generate tokens")
 	}
@@ -154,7 +154,7 @@ func (s *AuthService) Login(input LoginInput) (*AuthResponse, error) {
 	user.LastLogin = &now
 	_ = s.userRepo.Update(user)
 
-	tokens, err := s.jwtManager.GenerateTokenPair(user.ID, user.Email)
+	tokens, err := s.jwtManager.GenerateTokenPair(user.ID, user.Email, user.TokenVersion)
 	if err != nil {
 		return nil, errors.New("failed to generate tokens")
 	}
@@ -175,7 +175,13 @@ func (s *AuthService) RefreshToken(refreshToken string) (*utils.TokenPair, error
 		return nil, errors.New("user not found")
 	}
 
-	return s.jwtManager.GenerateTokenPair(user.ID, user.Email)
+	// Reject refresh tokens issued before a security-sensitive change (e.g. a
+	// password change bumps TokenVersion, invalidating older tokens).
+	if claims.TokenVersion != user.TokenVersion {
+		return nil, errors.New("session expired, please log in again")
+	}
+
+	return s.jwtManager.GenerateTokenPair(user.ID, user.Email, user.TokenVersion)
 }
 
 func (s *AuthService) GetUserByID(id uuid.UUID) (*UserResponse, error) {
@@ -213,7 +219,7 @@ func (s *AuthService) GoogleAuth(email, fullName, providerID string) (*AuthRespo
 	user.LastLogin = &now
 	_ = s.userRepo.Update(user)
 
-	tokens, err := s.jwtManager.GenerateTokenPair(user.ID, user.Email)
+	tokens, err := s.jwtManager.GenerateTokenPair(user.ID, user.Email, user.TokenVersion)
 	if err != nil {
 		return nil, errors.New("failed to generate tokens")
 	}

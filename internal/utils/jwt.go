@@ -16,8 +16,9 @@ type JWTManager struct {
 }
 
 type Claims struct {
-	UserID uuid.UUID `json:"user_id"`
-	Email  string    `json:"email"`
+	UserID       uuid.UUID `json:"user_id"`
+	Email        string    `json:"email"`
+	TokenVersion int       `json:"token_version"`
 	jwt.RegisteredClaims
 }
 
@@ -35,11 +36,12 @@ func NewJWTManager(secret string, expiry, refreshExpiry time.Duration) *JWTManag
 	}
 }
 
-func (j *JWTManager) GenerateTokenPair(userID uuid.UUID, email string) (*TokenPair, error) {
+func (j *JWTManager) GenerateTokenPair(userID uuid.UUID, email string, tokenVersion int) (*TokenPair, error) {
 	// Access token
 	accessClaims := Claims{
-		UserID: userID,
-		Email:  email,
+		UserID:       userID,
+		Email:        email,
+		TokenVersion: tokenVersion,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.expiry)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -55,8 +57,9 @@ func (j *JWTManager) GenerateTokenPair(userID uuid.UUID, email string) (*TokenPa
 
 	// Refresh token (longer expiry)
 	refreshClaims := Claims{
-		UserID: userID,
-		Email:  email,
+		UserID:       userID,
+		Email:        email,
+		TokenVersion: tokenVersion,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(j.refreshExpiry)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

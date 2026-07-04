@@ -70,6 +70,11 @@ func main() {
 	expenseService := services.NewExpenseService(expenseRepo, tripRepo)
 	memberService := services.NewMemberService(memberRepo, tripRepo, userRepo)
 
+	// Wire the gamification points awarder into the action-producing services.
+	tripService.SetPointsAwarder(userService)
+	reviewService.SetPointsAwarder(userService)
+	savedPlaceService.SetPointsAwarder(userService)
+
 	// ── Handlers ──────────────────────────────────────────────────────
 	authHandler := handlers.NewAuthHandler(authService)
 	userHandler := handlers.NewUserHandler(userService, authService, savedPlaceService, cloudinaryService)
@@ -123,6 +128,7 @@ func main() {
 		users := api.Group("/users")
 		users.Use(middleware.AuthMiddleware(jwtManager))
 		{
+			users.GET("/profile", userHandler.GetProfile)
 			users.PUT("/profile", userHandler.UpdateProfile)
 			users.PUT("/preferences", userHandler.UpdatePreferences)
 			users.PUT("/password", userHandler.ChangePassword)

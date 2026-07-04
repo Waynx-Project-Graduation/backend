@@ -22,6 +22,10 @@ type User struct {
 	Role           string         `gorm:"type:text;default:'user';not null" json:"role"`
 	ExplorerPoints int            `gorm:"default:0" json:"explorer_points"`
 	BadgeType      string         `gorm:"type:text;default:'explorer'" json:"badge_type"`
+	// TokenVersion is bumped whenever all existing sessions must be invalidated
+	// (e.g. after a password change). It is embedded in issued JWTs and checked
+	// on refresh so old tokens can no longer mint new ones.
+	TokenVersion   int            `gorm:"default:0" json:"-"`
 	Preferences    Preferences    `gorm:"type:jsonb" json:"preferences"`
 	LastLogin      *time.Time     `json:"last_login,omitempty"`
 	CreatedAt      time.Time      `json:"created_at"`

@@ -32,6 +32,7 @@ type TripService struct {
 	tripRepo  *repository.TripRepository
 	placeRepo *repository.PlaceRepository
 	aiClient  TripAIProvider
+	awarder   PointsAwarder
 }
 
 func NewTripService(tripRepo *repository.TripRepository, placeRepo *repository.PlaceRepository, aiClient TripAIProvider) *TripService {
@@ -40,6 +41,11 @@ func NewTripService(tripRepo *repository.TripRepository, placeRepo *repository.P
 		placeRepo: placeRepo,
 		aiClient:  aiClient,
 	}
+}
+
+// SetPointsAwarder wires the gamification awarder (optional).
+func (s *TripService) SetPointsAwarder(a PointsAwarder) {
+	s.awarder = a
 }
 
 // ── Input / Output Types ────────────────────────────────────────────────────
@@ -237,6 +243,11 @@ func (s *TripService) CreateTrip(userID uuid.UUID, input CreateTripInput) (*mode
 		// Roll back the parent trip so we don't leave a planned trip with no plan.
 		_ = s.tripRepo.Delete(trip.ID)
 		return nil, errors.New("failed to save itinerary")
+	}
+
+	// Gamification: reward the user for creating a trip (non-critical).
+	if s.awarder != nil {
+		_ = s.awarder.AwardPoints(userID, PointsPerTrip)
 	}
 
 	return s.tripRepo.FindByID(trip.ID)

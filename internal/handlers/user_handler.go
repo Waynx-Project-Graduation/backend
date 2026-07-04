@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"errors"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -25,6 +27,33 @@ func NewUserHandler(userService *services.UserService, authService *services.Aut
 	}
 }
 
+// mapUserError translates service sentinel errors into the correct HTTP status.
+func mapUserError(c *gin.Context, err error) {
+	switch {
+	case errors.Is(err, services.ErrUserNotFound):
+		utils.NotFound(c, "user not found")
+	case errors.Is(err, services.ErrIncorrectPassword):
+		utils.Unauthorized(c, "incorrect current password")
+	case errors.Is(err, services.ErrPasswordNotAllowed):
+		utils.BadRequest(c, err.Error())
+	default:
+		utils.BadRequest(c, err.Error())
+	}
+}
+
+// GET /api/users/profile — Get the authenticated user's full profile
+func (h *UserHandler) GetProfile(c *gin.Context) {
+	userID := getUserID(c)
+
+	user, err := h.userService.GetProfile(userID)
+	if err != nil {
+		mapUserError(c, err)
+		return
+	}
+
+	utils.Success(c, user)
+}
+
 // PUT /api/users/profile — Update user profile
 func (h *UserHandler) UpdateProfile(c *gin.Context) {
 	userID := getUserID(c)
@@ -37,7 +66,7 @@ func (h *UserHandler) UpdateProfile(c *gin.Context) {
 
 	user, err := h.userService.UpdateProfile(userID, input)
 	if err != nil {
-		utils.InternalError(c, err.Error())
+		mapUserError(c, err)
 		return
 	}
 
@@ -56,7 +85,7 @@ func (h *UserHandler) UpdatePreferences(c *gin.Context) {
 
 	user, err := h.userService.UpdatePreferences(userID, input)
 	if err != nil {
-		utils.InternalError(c, err.Error())
+		mapUserError(c, err)
 		return
 	}
 
@@ -74,11 +103,7 @@ func (h *UserHandler) ChangePassword(c *gin.Context) {
 	}
 
 	if err := h.userService.ChangePassword(userID, input); err != nil {
-		if err.Error() == "incorrect current password" {
-			utils.Unauthorized(c, err.Error())
-			return
-		}
-		utils.InternalError(c, err.Error())
+		mapUserError(c, err)
 		return
 	}
 
@@ -91,7 +116,7 @@ func (h *UserHandler) GetStats(c *gin.Context) {
 
 	stats, err := h.userService.GetStats(userID)
 	if err != nil {
-		utils.InternalError(c, err.Error())
+		mapUserError(c, err)
 		return
 	}
 
@@ -133,6 +158,11 @@ func (h *UserHandler) UpdateAvatar(c *gin.Context) {
 		return
 	}
 
+	if !isAllowedImage(header.Filename, header.Header.Get("Content-Type")) {
+		utils.BadRequest(c, "invalid file type: only JPEG, PNG, WebP, or GIF images are allowed")
+		return
+	}
+
 	// Upload to Cloudinary
 	url, err := h.cloudinaryService.UploadImage(c.Request.Context(), file, "trip-planner/avatars")
 	if err != nil {
@@ -141,16 +171,43 @@ func (h *UserHandler) UpdateAvatar(c *gin.Context) {
 	}
 
 	profileInput := services.UpdateProfileInput{
-		AvatarURL: url,
+		AvatarURL: &url,
 	}
 
 	user, err := h.userService.UpdateProfile(userID, profileInput)
 	if err != nil {
-		utils.InternalError(c, err.Error())
+		mapUserError(c, err)
 		return
 	}
 
 	utils.Success(c, user)
+}
+
+// isAllowedImage validates an uploaded file is an image by both its declared
+// content-type and its file extension.
+func isAllowedImage(filename, contentType string) bool {
+	allowedTypes := map[string]bool{
+		"image/jpeg": true,
+		"image/jpg":  true,
+		"image/png":  true,
+		"image/webp": true,
+		"image/gif":  true,
+	}
+	allowedExts := map[string]bool{
+		".jpg": true, ".jpeg": true, ".png": true, ".webp": true, ".gif": true,
+	}
+
+	ct := strings.ToLower(strings.TrimSpace(contentType))
+	if !allowedTypes[ct] {
+		return false
+	}
+
+	name := strings.ToLower(filename)
+	dot := strings.LastIndex(name, ".")
+	if dot < 0 {
+		return false
+	}
+	return allowedExts[name[dot:]]
 }
 
 // DELETE /api/users/account — Delete user account (soft delete)

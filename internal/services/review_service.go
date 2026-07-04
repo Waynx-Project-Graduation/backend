@@ -11,6 +11,7 @@ import (
 type ReviewService struct {
 	reviewRepo *repository.ReviewRepository
 	placeRepo  *repository.PlaceRepository
+	awarder    PointsAwarder
 }
 
 func NewReviewService(reviewRepo *repository.ReviewRepository, placeRepo *repository.PlaceRepository) *ReviewService {
@@ -18,6 +19,11 @@ func NewReviewService(reviewRepo *repository.ReviewRepository, placeRepo *reposi
 		reviewRepo: reviewRepo,
 		placeRepo:  placeRepo,
 	}
+}
+
+// SetPointsAwarder wires the gamification awarder (optional).
+func (s *ReviewService) SetPointsAwarder(a PointsAwarder) {
+	s.awarder = a
 }
 
 type CreateReviewInput struct {
@@ -49,6 +55,10 @@ func (s *ReviewService) CreateReview(userID uuid.UUID, placeID uint, input Creat
 
 	if err := s.reviewRepo.Create(review); err != nil {
 		return nil, errors.New("failed to create review")
+	}
+
+	if s.awarder != nil {
+		_ = s.awarder.AwardPoints(userID, PointsPerReview)
 	}
 
 	return review, nil
