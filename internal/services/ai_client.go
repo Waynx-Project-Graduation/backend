@@ -160,6 +160,7 @@ type AIRecommendation struct {
 	DurationNeeded int     `json:"duration_needed"`
 	Description    string  `json:"description"`
 	MatchScore     int     `json:"match_score"` // 0–100
+	ImageURL       string  `json:"image_url"`
 }
 
 type AIPlan struct {

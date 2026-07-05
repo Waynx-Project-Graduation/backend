@@ -72,5 +72,13 @@ func (s *PlaceService) RecommendPlaces(req RecommendRequest) ([]AIRecommendation
 	if err != nil {
 		return nil, err
 	}
+
+	for i := range resp.Recommendations {
+		place, err := s.placeRepo.FindByID(resp.Recommendations[i].PlaceID)
+		if err == nil && place != nil {
+			resp.Recommendations[i].ImageURL = place.ThumbnailURL
+		}
+	}
+
 	return resp.Recommendations, nil
 }
