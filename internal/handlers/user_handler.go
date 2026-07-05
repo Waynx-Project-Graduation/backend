@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"log"
 	"strconv"
 	"strings"
 
@@ -166,6 +167,7 @@ func (h *UserHandler) UpdateAvatar(c *gin.Context) {
 	// Upload to Cloudinary
 	url, err := h.cloudinaryService.UploadImage(c.Request.Context(), file, "trip-planner/avatars")
 	if err != nil {
+		log.Printf("Failed to upload avatar to Cloudinary: %v", err)
 		utils.InternalError(c, "failed to upload image to Cloudinary")
 		return
 	}
