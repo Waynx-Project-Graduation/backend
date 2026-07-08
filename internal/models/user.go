@@ -38,7 +38,6 @@ type User struct {
 	ChatSessions  []ChatSession  `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;" json:"chat_sessions,omitempty"`
 	Notifications []Notification `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;" json:"notifications,omitempty"`
 	Reviews       []PlaceReview  `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;" json:"reviews,omitempty"`
-	TripMembers   []TripMember   `gorm:"foreignKey:UserID;constraint:OnDelete:CASCADE;" json:"trip_members,omitempty"`
 }
 
 // BeforeCreate generates a UUID before inserting (replaces gen_random_uuid())

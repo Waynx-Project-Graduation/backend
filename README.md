@@ -26,8 +26,6 @@ pinned: false
 * **Bulletproof Security:** JWT-based authentication with refresh token rotation. Passwords secured using **bcrypt (Cost 12)**.
 * **Robust Relational Integrity:** GORM with strict, database-level `OnDelete:CASCADE` constraints. Hard-deleting a trip instantly wipes all associated destinations, days, and activities.
 * **Leak-Proof Architecture:** All internal SQL/GORM errors are scrubbed at the service layer. Clients only see safe, generic HTTP errors.
-* **AI Output Sanitization:** Custom Markdown-stripper pipeline to robustly parse AI-generated JSON, preventing crashes from hallucinated formatting.
-* **Trip Collaboration:** Invite members to trips with role-based permissions (owner, editor, viewer).
 * **Expense Tracking:** Track itemized expenses per trip with currency and category support.
 * **Place Reviews:** Community-driven 1-5 star ratings and written reviews on locations.
 * **Real-time Notifications:** In-app notification system with unread counts.
@@ -47,7 +45,6 @@ graph TD
     User([User]) -->|Has Many| Trip([Trip])
     Trip -->|Has Many| TripDest([TripDestination])
     Trip -->|Has Many| TripExpense([TripExpense])
-    Trip -->|Has Many| TripMember([TripMember])
     TripDest -->|Has Many| TripDay([TripDay])
     TripDay -->|Has Many| TripAct([TripActivity])
     TripAct -->|References| Place([Place])
@@ -281,7 +278,6 @@ All endpoints are JWT-protected and strictly scoped to the authenticated user.
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/places/:id/photo` | Upload place photo |
 | POST | `/places/:id/save` | Save place to favorites |
 | DELETE | `/places/:id/save` | Remove place from favorites |
 | GET | `/places/:id/save` | Check if place is saved |
@@ -299,9 +295,6 @@ All endpoints are JWT-protected and strictly scoped to the authenticated user.
 | PUT | `/trips/:id` | Update trip metadata |
 | DELETE | `/trips/:id` | Delete trip (cascading) |
 | POST | `/trips/:id/regenerate` | Regenerate itinerary via AI |
-| POST | `/trips/:id/activities` | Add a custom activity |
-| PUT | `/trips/:id/activities/:activityId` | Update an activity |
-| DELETE | `/trips/:id/activities/:activityId` | Delete an activity |
 
 ### Trip Expenses (Protected)
 
@@ -311,15 +304,6 @@ All endpoints are JWT-protected and strictly scoped to the authenticated user.
 | GET | `/trips/:id/expenses` | List trip expenses |
 | PUT | `/trips/:id/expenses/:expenseId` | Update an expense |
 | DELETE | `/trips/:id/expenses/:expenseId` | Delete an expense |
-
-### Trip Members (Protected)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/trips/:id/members` | Invite a member by email |
-| GET | `/trips/:id/members` | List trip members |
-| PUT | `/trips/:id/members/:userId` | Change member role (editor/viewer) |
-| DELETE | `/trips/:id/members/:userId` | Remove a member |
 
 ### Chat — WAYNX AI Assistant (Protected)
 

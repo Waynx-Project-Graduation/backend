@@ -55,7 +55,6 @@ func AutoMigrate(db *gorm.DB) {
 		&models.SavedPlace{},
 		&models.PlaceReview{},
 		&models.TripExpense{},
-		&models.TripMember{},
 	)
 	if err != nil {
 		log.Fatalf("Failed to auto-migrate: %v", err)

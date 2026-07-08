@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"errors"
-
 	"github.com/google/uuid"
 	"github.com/kemit/trip-planner/internal/models"
 	"gorm.io/gorm"
@@ -118,56 +116,4 @@ func (r *TripRepository) CreateTripDays(days []models.TripDay) error {
 // CreateActivities creates activities in bulk
 func (r *TripRepository) CreateActivities(activities []models.TripActivity) error {
 	return r.db.Create(&activities).Error
-}
-
-// FindActivity finds a specific activity by ID
-func (r *TripRepository) FindActivity(activityID uuid.UUID) (*models.TripActivity, error) {
-	var activity models.TripActivity
-	err := r.db.Preload("Place").Where("id = ?", activityID).First(&activity).Error
-	if err != nil {
-		return nil, err
-	}
-	return &activity, nil
-}
-
-// UpdateActivity updates a single activity
-func (r *TripRepository) UpdateActivity(activity *models.TripActivity) error {
-	return r.db.Save(activity).Error
-}
-
-// DeleteActivity deletes a single activity
-func (r *TripRepository) DeleteActivity(activityID uuid.UUID) error {
-	return r.db.Where("id = ?", activityID).Delete(&models.TripActivity{}).Error
-}
-
-// ValidateDayBelongsToTrip checks that a trip day belongs to the given trip.
-func (r *TripRepository) ValidateDayBelongsToTrip(dayID, tripID uuid.UUID) error {
-	var count int64
-	r.db.Model(&models.TripDay{}).Where("id = ? AND trip_id = ?", dayID, tripID).Count(&count)
-	if count == 0 {
-		return errors.New("trip day not found in this trip")
-	}
-	return nil
-}
-
-// FindActivityOwner returns the user ID that owns the given activity,
-// traversing the chain: activity → trip_day → trip_destination → trip.
-func (r *TripRepository) FindActivityOwner(activityID uuid.UUID) (uuid.UUID, error) {
-	var userID string
-	err := r.db.Raw(`
-		SELECT t.user_id
-		FROM trip_activities ta
-		JOIN trip_days td ON td.id = ta.trip_day_id
-		JOIN trip_destinations dest ON dest.id = td.trip_destination_id
-		JOIN trips t ON t.id = dest.trip_id
-		WHERE ta.id = ?
-	`, activityID).Scan(&userID).Error
-	if err != nil || userID == "" {
-		return uuid.Nil, errors.New("activity owner not found")
-	}
-	parsed, err := uuid.Parse(userID)
-	if err != nil {
-		return uuid.Nil, errors.New("invalid owner ID")
-	}
-	return parsed, nil
 }

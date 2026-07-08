@@ -25,7 +25,6 @@ type Trip struct {
 	User         *User             `gorm:"foreignKey:UserID" json:"user,omitempty"`
 	Destinations []TripDestination `gorm:"foreignKey:TripID;constraint:OnDelete:CASCADE;" json:"destinations,omitempty"`
 	Expenses     []TripExpense     `gorm:"foreignKey:TripID;constraint:OnDelete:CASCADE;" json:"expenses,omitempty"`
-	Members      []TripMember      `gorm:"foreignKey:TripID;constraint:OnDelete:CASCADE;" json:"members,omitempty"`
 }
 
 func (t *Trip) BeforeCreate(tx *gorm.DB) error {

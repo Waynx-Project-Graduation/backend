@@ -55,7 +55,6 @@ func main() {
 	notifRepo := repository.NewNotificationRepository(db)
 	reviewRepo := repository.NewReviewRepository(db)
 	expenseRepo := repository.NewExpenseRepository(db)
-	memberRepo := repository.NewMemberRepository(db)
 
 	// ── Services ──────────────────────────────────────────────────────
 	authService := services.NewAuthService(userRepo, jwtManager)
@@ -68,7 +67,6 @@ func main() {
 	notifService := services.NewNotificationService(notifRepo)
 	reviewService := services.NewReviewService(reviewRepo, placeRepo)
 	expenseService := services.NewExpenseService(expenseRepo, tripRepo)
-	memberService := services.NewMemberService(memberRepo, tripRepo, userRepo)
 
 	// Wire the gamification points awarder into the action-producing services.
 	tripService.SetPointsAwarder(userService)
@@ -79,12 +77,11 @@ func main() {
 	authHandler := handlers.NewAuthHandler(authService)
 	userHandler := handlers.NewUserHandler(userService, authService, savedPlaceService, cloudinaryService)
 	tripHandler := handlers.NewTripHandler(tripService)
-	placeHandler := handlers.NewPlaceHandler(placeService, savedPlaceService, cloudinaryService)
+	placeHandler := handlers.NewPlaceHandler(placeService, savedPlaceService)
 	chatHandler := handlers.NewChatHandler(chatService)
 	notifHandler := handlers.NewNotificationHandler(notifService)
 	reviewHandler := handlers.NewReviewHandler(reviewService)
 	expenseHandler := handlers.NewExpenseHandler(expenseService)
-	memberHandler := handlers.NewMemberHandler(memberService)
 
 	// ── Router Setup ──────────────────────────────────────────────────
 	r := gin.Default()
@@ -156,7 +153,6 @@ func main() {
 		placesProtected := api.Group("/places")
 		placesProtected.Use(middleware.AuthMiddleware(jwtManager))
 		{
-			placesProtected.POST("/:id/photo", placeHandler.UploadPlacePhoto)
 			placesProtected.POST("/:id/save", placeHandler.SavePlace)
 			placesProtected.DELETE("/:id/save", placeHandler.UnsavePlace)
 			placesProtected.GET("/:id/save", placeHandler.IsSaved)
@@ -175,21 +171,12 @@ func main() {
 			trips.PUT("/:id", tripHandler.UpdateTrip)
 			trips.DELETE("/:id", tripHandler.DeleteTrip)
 			trips.POST("/:id/regenerate", tripHandler.RegenerateItinerary)
-			trips.POST("/:id/activities", tripHandler.CreateActivity)
-			trips.PUT("/:id/activities/:activityId", tripHandler.UpdateActivity)
-			trips.DELETE("/:id/activities/:activityId", tripHandler.DeleteActivity)
 
 			// Trip expenses
 			trips.POST("/:id/expenses", expenseHandler.CreateExpense)
 			trips.GET("/:id/expenses", expenseHandler.ListExpenses)
 			trips.PUT("/:id/expenses/:expenseId", expenseHandler.UpdateExpense)
 			trips.DELETE("/:id/expenses/:expenseId", expenseHandler.DeleteExpense)
-
-			// Trip members
-			trips.POST("/:id/members", memberHandler.AddMember)
-			trips.GET("/:id/members", memberHandler.ListMembers)
-			trips.PUT("/:id/members/:userId", memberHandler.UpdateMemberRole)
-			trips.DELETE("/:id/members/:userId", memberHandler.RemoveMember)
 		}
 
 		// ── Chat Routes (Protected) ──────────────────────────

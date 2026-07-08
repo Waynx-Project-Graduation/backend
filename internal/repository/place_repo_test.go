@@ -52,27 +52,6 @@ func TestPlaceRepository_CreateAndFindByID(t *testing.T) {
 	}
 }
 
-func TestPlaceRepository_UpdateThumbnail(t *testing.T) {
-	db := setupTestDB(t)
-	repo := NewPlaceRepository(db)
-
-	place := &models.Place{
-		Name: "Egyptian Museum",
-		City: "Cairo",
-	}
-	repo.Create(place)
-
-	err := repo.UpdateThumbnail(place.ID, "https://example.com/image.jpg")
-	if err != nil {
-		t.Fatalf("Expected no error updating thumbnail, got: %v", err)
-	}
-
-	foundPlace, _ := repo.FindByID(place.ID)
-	if foundPlace.ThumbnailURL != "https://example.com/image.jpg" {
-		t.Errorf("Expected thumbnail URL to be updated")
-	}
-}
-
 func TestPlaceRepository_ListWithFilters(t *testing.T) {
 	db := setupTestDB(t)
 	repo := NewPlaceRepository(db)
